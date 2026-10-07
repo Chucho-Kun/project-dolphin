@@ -1,0 +1,39 @@
+1. Lo más difícil del producto: el editor y el PDF
+Editor visual: Fabric.js o Konva (canvas) para arrastrar imágenes y editar texto sobre zonas predefinidas. Mi recomendación: zonas editables fijas por plantilla (foto aquí, texto allá) en lugar de un editor libre tipo Canva. Es más fácil de construir, reduce errores de impresión y mantiene el diseño bonito.
+Generación del PDF final: guarda el diseño como JSON y genera el PDF en servidor (pdf-lib, o Playwright/Puppeteer si necesitas tipografía compleja). Así el PDF de alta calidad solo se genera después del pago, y la vista previa gratuita lleva marca de agua o baja resolución.
+Requisitos de impresión: 300 DPI, validación de resolución al subir fotos (avisar si es muy baja), sangrado (bleed), tamaños Carta y A4, líneas de corte y de doblez diferenciadas (sólidas vs. punteadas), pestañas de pegado.
+Vista previa: para tarjetas planas basta una simulación 2D. Para pop-up, un preview 3D ligero con Three.js que muestre cómo se abre sería un diferenciador enorme, pero déjalo para una fase 2.
+2. Pagos globales (clave si vendes a cualquier país)
+Merchant of Record (Lemon Squeezy, Paddle, Polar): ellos cobran y gestionan IVA/impuestos de cada país por ti. Para empezar a vender globalmente sin dolores fiscales es lo más práctico, a cambio de una comisión mayor.
+Stripe directo: más barato y flexible, pero tú eres responsable de impuestos internacionales (Stripe Tax ayuda, no lo resuelve todo).
+Considera mostrar precios en la moneda local y, más adelante, métodos como PayPal, Apple/Google Pay.
+3. Entrega y cuentas
+Checkout sin registro obligatorio (guest) con enlace mágico por correo: menos fricción = más conversión.
+Enlace de descarga con URL firmada y con expiración (S3/R2), y que el usuario pueda volver a descargar desde su cuenta. Para el correo transaccional, Resend te funciona muy bien.
+Guarda el diseño personalizado: si el cliente quiere cambiar un texto después, que pueda reabrirlo (esto además genera recompra).
+4. Modelo de negocio
+Gratis como imán de leads: plantillas gratuitas a cambio de correo, para construir lista.
+Pago por plantilla (precio bajo, tipo $3–8 USD) más paquetes/bundles (por ejemplo, kit de boda completo).
+Suscripción (acceso a todo el catálogo) cuando tengas suficiente contenido.
+A futuro: marketplace donde otros diseñadores suban plantillas y tú cobras comisión.
+5. Adquisición de clientes
+Pinterest es tu canal natural: tu público busca ideas visuales ahí, y el tráfico dura meses. La galería de proyectos terminados es tu mejor contenido.
+SEO: páginas por nicho ("invitación pop-up de cumpleaños", "tarjeta kirigami de boda", "baby shower imprimible"). Aquí tu experiencia en SEO técnico es ventaja directa.
+YouTube/TikTok: videos cortos del armado paso a paso (y de la tarjeta abriéndose) son muy compartibles.
+Etsy como canal complementario para validar demanda.
+6. Paso 6 (contenido de usuarios): mejoras
+Además de redes sociales, agrega una galería propia con subida de fotos (con moderación): así el contenido vive en tu sitio y ayuda al SEO.
+Incentiva con un descuento, una plantilla gratis o ser "destacado".
+Un correo automático 5–7 días después de la compra pidiendo la foto funciona mejor que solo el botón al descargar.
+7. Riesgos a considerar
+Derechos de autor: licencias de fuentes (usa Google Fonts u otras libres comerciales) y términos de uso sobre las imágenes que suben los usuarios.
+Mecánica del pop-up: un diseño que no cierra bien en papel genera reembolsos. Prototipa y arma físicamente cada plantilla antes de publicarla.
+Soporte por problemas de impresión (tipo de papel, escala al imprimir): una guía clara de "cómo imprimir y armar" reduce mucho esto.
+Contracargos (chargebacks) en productos digitales.
+8. Cómo validar sin construir todo
+Diseña 5–10 plantillas muy buenas en 2–3 nichos.
+Véndelas como PDFs estáticos en Etsy o en una página simple con Stripe/Lemon Squeezy.
+Mide qué nichos y estilos se venden y qué preguntan los clientes.
+Con eso construyes el editor sabiendo qué personalización realmente piden.
+
+El mayor riesgo del plan es invertir meses en el editor antes de saber si el público paga por ello, así que la validación previa es muy barata comparada con el desarrollo.

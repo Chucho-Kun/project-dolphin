@@ -1,0 +1,904 @@
+Con las restricciones que acabas de poner, yo haría el lanzamiento mucho más específico. No intentaría crear “el Etsy de plantillas” en 60 días. Intentaría crear un pequeño marketplace especializado, conseguir 10 diseñadores, 30–50 productos y demostrar que existen compradores dispuestos a pagar.
+
+Además, revisé rápidamente el mercado actual: Etsy ya tiene miles de productos de pop-up cards y los precios de archivos digitales van desde alrededor de US$2–3 hasta US$10–20 en diseños más elaborados. También hay ejemplos de plantillas personalizables, no solamente PDFs estáticos.
+
+Mi propuesta para tus primeros 60 días
+El nicho inicial
+
+No lanzaría:
+
+“Marketplace de plantillas digitales”
+
+Lanzaría algo mucho más fácil de entender:
+
+“Crea regalos de papel personalizados que puedes imprimir y armar en casa.”
+
+Y empezaría con tres familias de productos:
+
+Tarjetas pop-up personalizables
+Regalos/cajas de papel desplegables
+Mini álbumes/dioramas de papel
+
+Dejaría invitaciones, decoración, juegos, papercraft complejo, etc. para después.
+
+¿Por qué?
+
+Porque las tres categorías comparten la misma infraestructura:
+
+plantilla → fotos/texto → editor → PDF → imprimir → cortar → armar.
+
+Eso significa que tu inversión tecnológica se reutiliza.
+
+1. Los productos exactos que vendería
+
+Para el lanzamiento buscaría aproximadamente 30 productos.
+
+Categoría A — Pop-up cards
+
+15 productos
+
+Ejemplos:
+
+❤️ Tarjeta romántica
+🎂 Cumpleaños
+👩 Mamá
+👨 Papá
+👵 Abuela
+👴 Abuelo
+🐱 Gato
+🐶 Perro
+💍 Aniversario
+💕 San Valentín
+🎓 Graduación
+🎄 Navidad
+🎁 Gracias
+🌸 Floral
+✈️ Viaje
+
+Pero no serían simplemente diseños gráficos.
+
+El valor estaría en:
+
+“Personaliza con tus propias fotos.”
+
+Categoría B — Regalos desplegables
+
+10 productos
+
+Por ejemplo:
+
+Caja sorpresa
+Caja para cumpleaños
+Caja romántica
+Caja de recuerdos
+Mini álbum desplegable
+Explosion box
+Caja para fotografías
+Caja para aniversario
+Caja para regalo
+Caja temática
+
+Aquí puedes subir el ticket porque el producto tiene más trabajo.
+
+Categoría C — Mini dioramas / escenas
+
+5 productos
+
+Por ejemplo:
+
+Habitación
+Cafetería
+Casa
+Navidad
+Escena romántica
+
+Estos son especialmente buenos para contenido visual.
+
+2. No vendería todos al mismo precio
+
+Establecería tres niveles.
+
+Simple
+
+US$2.99–3.99
+
+Una plantilla relativamente sencilla.
+
+Personalizable
+
+US$4.99–6.99
+
+Incluye editor:
+
+fotos
+nombres
+textos
+colores
+Premium
+
+US$7.99–12.99
+
+Diseño más elaborado:
+
+múltiples páginas
+mecanismos
+instrucciones
+varios formatos
+elementos adicionales
+
+Esto está razonablemente alineado con lo que actualmente se observa en el mercado de pop-up/papercraft digital. Hay productos muy económicos, pero también diseños elaborados que llegan a alrededor de US$10–20.
+
+3. El producto gratuito
+
+Necesitas uno.
+
+Pero no regalaría uno de tus mejores diseños.
+
+Crearía:
+
+“Free Pop-Up Card — Your First DIY Project”
+
+$0.
+
+A cambio:
+
+correo electrónico.
+
+Entonces:
+
+Visitante
+   ↓
+Descarga gratis
+   ↓
+Email
+   ↓
+Newsletter
+   ↓
+"Descubre diseños premium"
+   ↓
+Compra
+
+El gratuito tiene otra función:
+
+demostrar que tu plataforma funciona.
+
+4. El comprador
+
+Aquí sería muy específico.
+
+Tu comprador inicial no es simplemente:
+
+“persona que le gustan las manualidades”.
+
+Yo definiría:
+
+Buyer persona principal
+
+Mujer u hombre de 20–45 años, creativo, que quiere hacer un regalo personalizado pero no necesariamente sabe diseñarlo.
+
+Situaciones:
+
+“Quiero hacerle algo especial a mi novia.”
+
+“Quiero sorprender a mi mamá.”
+
+“Es el cumpleaños de mi hijo.”
+
+“Quiero hacer algo con nuestras fotos.”
+
+“Quiero hacer algo bonito pero no quiero gastar $50 en una tienda.”
+
+Y existe otra característica importante:
+
+Tiene acceso a impresora
+
+o
+
+Puede imprimir fácilmente en una papelería/local.
+
+Eso elimina la necesidad de logística física.
+
+5. Segundo comprador: el "maker"
+
+Después buscaría:
+
+personas que ya hacen manualidades.
+
+Estas son potencialmente mejores clientes porque pueden comprar múltiples diseños.
+
+Por ejemplo:
+
+“Necesito 20 diseños nuevos para mi tienda.”
+
+Aquí aparecen:
+
+Etsy sellers
+emprendedores
+papelerías
+talleres
+craft influencers
+
+Y ahí puedes introducir:
+
+Licencia comercial
+6. El diseñador
+
+No buscaría diseñadores gráficos genéricos.
+
+Buscaría específicamente:
+
+Diseñadores de:
+papercraft
+SVG
+Cricut
+Silhouette
+printable crafts
+tarjetas
+scrapbooking
+origami
+pop-up
+packaging
+ilustración
+
+¿Por qué?
+
+Porque ya tienen producto digital vendible.
+
+No necesitas convencerlos de que creen un negocio desde cero.
+
+7. La propuesta para el diseñador
+
+No le diría:
+
+“Únete a mi marketplace.”
+
+Demasiado abstracto.
+
+Le diría:
+
+“Monetiza tus diseños de papercraft sin encargarte de vender, cobrar ni entregar los archivos.”
+
+Y:
+
+“Tú creas el diseño. Nosotros nos encargamos de la plataforma, personalización, pagos y entrega.”
+
+Eso es mucho más atractivo.
+
+8. Tu comisión
+
+Aquí haría algo agresivo durante el lanzamiento.
+
+Primeros 10 diseñadores
+
+80% diseñador / 20% plataforma
+
+durante los primeros 60 días.
+
+Después:
+
+70% / 30%
+
+¿Por qué 20% inicialmente?
+
+Porque tu mayor problema no será conseguir compradores.
+
+Será conseguir buenos diseñadores dispuestos a apostar por una plataforma desconocida.
+
+Y necesitas darles un incentivo.
+
+Además, Creative Market, por ejemplo, indica que su comisión estándar deja al shop con 50% del precio de lista, aunque sus tasas pueden variar.
+
+Por lo tanto, puedes posicionarte inicialmente como:
+
+“El diseñador conserva 80%.”
+
+Es un mensaje de marketing muy fácil.
+
+9. Pero hay una condición
+
+El 80% no debe significar que tú absorbes todos los costos.
+
+En los términos del marketplace dejaría claramente definido cómo se calculan las comisiones y qué ocurre con:
+
+impuestos
+reembolsos
+chargebacks
+comisiones del procesador
+descuentos
+
+Porque con productos de US$3–5, los costos de pago importan muchísimo.
+
+Como referencia, Gumroad actualmente cobra 10% + US$0.50 en ventas directas y 30% cuando la venta llega mediante su marketplace Discover.
+
+Eso te muestra algo importante:
+
+No quieres construir un negocio basado exclusivamente en productos de US$2.
+
+10. Yo establecería un precio mínimo
+
+Por ejemplo:
+
+Precio mínimo:
+
+US$2.99
+
+Y recomendaría:
+
+US$4.99–6.99
+
+Eso evita que tengas:
+
+1,000 ventas de US$0.99
+
+que generan mucho trabajo y poco dinero.
+
+Creative Market también utiliza mínimos de precio precisamente para evitar una carrera hacia precios cada vez menores.
+
+11. El gran truco: bundles
+
+Aquí veo una oportunidad muy importante.
+
+Supongamos que un diseñador tiene:
+
+10 tarjetas de cumpleaños
+
+Individual:
+
+$4.99
+
+Bundle:
+
+$19.99
+
+El comprador piensa:
+
+“Por $20 tengo diez diseños.”
+
+Y tú aumentas:
+
+AOV — Average Order Value.
+
+Esto también ayuda muchísimo con los costos de procesamiento.
+
+12. Cómo conseguir los primeros 10 diseñadores
+
+No empezaría con publicidad.
+
+Los buscaría manualmente.
+
+Objetivo:
+
+100 diseñadores contactados → 10 aceptan.
+
+No necesitas 1,000.
+
+Buscaría en:
+
+Instagram
+Pinterest
+TikTok
+Etsy
+Reddit
+grupos de Facebook
+comunidades de Cricut
+comunidades de papercraft
+YouTube
+13. Pero no los contactaría vendiéndoles la plataforma
+
+Les mostraría algo.
+
+Construiría primero:
+
+Landing:
+
+Sell your papercraft designs
+
+Y debajo:
+
+Create
+Upload
+Sell
+Earn
+
+Y:
+
+Keep 80% of your sales during our launch.
+
+Después:
+
+“Estamos seleccionando los primeros 10 diseñadores.”
+
+Eso crea exclusividad.
+
+14. Tu primer catálogo podría ser colaborativo
+
+Podrías decir:
+
+Founding Creators
+
+Los primeros 10 diseñadores reciben:
+
+80% comisión
+perfil destacado
+insignia Founding Creator
+promoción en redes
+aparición en newsletter
+sus productos destacados en homepage
+
+Eso tiene costo prácticamente cero para ti.
+
+15. ¿Cómo conseguir 100 compradores?
+
+Aquí dividiría el objetivo.
+
+No intentaría conseguir:
+
+100 compradores completamente desconocidos.
+
+Buscaría:
+
+30 compradores orgánicos
+30 provenientes de Pinterest
+20 provenientes de TikTok/Instagram
+20 provenientes de comunidades
+16. Pinterest sería uno de tus principales canales
+
+Tu producto tiene una característica perfecta para Pinterest:
+
+se vende visualmente.
+
+Pinterest reporta actualmente 640 millones de usuarios activos mensuales y señala que sus usuarios utilizan la plataforma para descubrir, planear y comprar; además, 96% de sus búsquedas principales son no relacionadas con marcas.
+
+Eso último es particularmente interesante para ti.
+
+La persona no necesariamente buscará:
+
+“TuMarca”
+
+Buscará:
+
+“DIY birthday card”
+
+“pop up card ideas”
+
+“DIY anniversary gift”
+
+“printable pop up card”
+
+Y tú puedes aparecer.
+
+17. Pero no publicaría únicamente el producto
+
+Haría 3 tipos de Pin por producto.
+
+Pin 1
+
+Resultado final
+
+“DIY Pop-Up Birthday Card”
+
+Pin 2
+
+Proceso
+
+“From paper to this…”
+
+Pin 3
+
+Problema/solución
+
+“Want to make a personalized birthday gift?”
+
+Y todos llevan a:
+
+Personalizar esta plantilla
+
+18. TikTok / Reels
+
+Aquí haría contenido extremadamente sencillo.
+
+Ejemplo:
+
+HOY HICE ESTO CON 2 HOJAS DE PAPEL
+
+        ↓
+
+[impresión]
+
+        ↓
+
+[corte]
+
+        ↓
+
+[doblar]
+
+        ↓
+
+[armar]
+
+        ↓
+
+RESULTADO
+
+No necesitas aparecer tú.
+
+Puedes grabar solamente las manos.
+
+Eso además genera contenido que después reutilizas:
+
+TikTok → Instagram → YouTube Shorts → Pinterest.
+
+19. Una estrategia que me gusta mucho para tus primeros compradores
+"Free template Friday"
+
+Cada viernes:
+
+FREE POP-UP TEMPLATE
+
+La gente entra.
+
+Descarga.
+
+Deja email.
+
+Después:
+
+“Si te gustó este diseño, mira estos 5 premium.”
+
+Esto construye audiencia sin tener que pagar por cada visitante.
+
+20. Tu embudo
+
+Lo diseñaría así:
+
+              PIN / REEL
+                  │
+                  ▼
+            LANDING PAGE
+                  │
+          ┌───────┴───────┐
+          │               │
+       GRATIS           PREMIUM
+          │               │
+          ▼               ▼
+        EMAIL          PERSONALIZAR
+          │               │
+          └───────┬───────┘
+                  ▼
+               CHECKOUT
+                  │
+                  ▼
+              DESCARGA
+                  │
+                  ▼
+             "MUÉSTRANOS"
+                  │
+                  ▼
+                UGC
+                  │
+                  ▼
+           NUEVOS COMPRADORES
+
+Ese último paso es importantísimo.
+
+21. Y aprovecharía muchísimo el contenido del comprador
+
+Después de la descarga:
+
+¿Lo armaste?
+
+📸 Comparte una foto.
+
+Podrías aparecer en nuestra galería.
+
+Con permiso:
+
+Producto
+ ↓
+Foto del comprador
+ ↓
+"Así lo hizo Ana"
+ ↓
+Compartir
+ ↓
+Nuevo tráfico
+
+Tu catálogo deja de ser solamente renders digitales.
+
+Empieza a mostrar:
+
+personas reales haciendo el producto.
+
+Eso genera confianza.
+
+22. Los primeros 100 compradores podrían venir así
+
+Yo plantearía este objetivo:
+
+Canal	Compradores objetivo
+Pinterest orgánico	25
+TikTok/Reels	20
+Comunidades Facebook/Reddit	15
+Diseñadores promocionando sus productos	20
+Email/freebies	10
+SEO	5
+Contactos / conocidos / networking	5
+Total	100
+
+No necesitas que cada canal sea un éxito.
+
+Necesitas descubrir cuál de ellos tiene mejor CAC.
+
+23. Y aquí hay una idea MUY importante
+
+Los diseñadores son también tu canal de adquisición.
+
+Supongamos:
+
+Diseñador #1
+
+tiene:
+
+3,000 seguidores Instagram
+2,000 Pinterest
+500 TikTok
+
+Publica:
+
+“Ahora mis diseños están disponibles en X.”
+
+Tú obtienes tráfico.
+
+Por eso el marketplace tiene un efecto interesante:
+
+Más diseñadores
+      ↓
+Más contenido
+      ↓
+Más productos
+      ↓
+Más promoción
+      ↓
+Más tráfico
+      ↓
+Más compradores
+      ↓
+Más ventas
+      ↓
+Más diseñadores quieren entrar
+
+Ese es el flywheel que debes intentar construir.
+
+24. ¿En qué gastaría los $10,000?
+
+Yo haría algo así:
+
+Uso	MXN
+Dominio + servicios	$500
+Infraestructura	$1,000
+Email / herramientas	$500
+Recursos gráficos / mockups	$500
+Pruebas de pagos	$500
+Publicidad experimental	$3,000
+Incentivos / concursos / promociones	$1,000
+Reserva	$3,000
+Total	$10,000
+
+Y una regla:
+
+No gastar los $3,000 de publicidad de golpe.
+
+Haz:
+
+$300 → medir → $300 → medir → $500 → medir.
+
+Si algo funciona, aumentas.
+
+25. Tu objetivo económico de los primeros 60 días
+
+No pondría como objetivo:
+
+“Ganar $20,000.”
+
+Sería demasiado pronto.
+
+Pondría:
+
+Objetivo 1
+
+10 diseñadores
+
+Objetivo 2
+
+30 productos
+
+Objetivo 3
+
+100 compradores registrados
+
+Objetivo 4
+
+20–30 ventas pagadas
+
+Objetivo 5
+
+Primera comisión
+
+Pero si llegas a:
+
+100 compradores + 50 ventas
+
+ya tienes información muchísimo más valiosa.
+
+26. La métrica que más me interesaría
+
+Supongamos:
+
+1,000 personas llegan a una página de producto.
+
+Y:
+
+1,000 visitas
+ ↓
+100 empiezan personalización
+ ↓
+30 llegan al checkout
+ ↓
+10 compran
+
+Eso te da:
+
+1% conversión visita → venta.
+
+Ahora puedes empezar a experimentar.
+
+Pero si ocurre:
+
+1,000 visitas
+ ↓
+20 personalizaciones
+ ↓
+2 checkout
+ ↓
+0 ventas
+
+el problema probablemente no es tráfico.
+
+Puede ser:
+
+precio
+confianza
+producto
+preview
+checkout
+método de pago
+dificultad de personalización
+
+Y eso es exactamente el tipo de información que necesitas obtener durante los primeros 60 días.
+
+27. El MVP que yo construiría
+
+Concretamente:
+
+Cliente
+Home
+categorías
+búsqueda
+página de producto
+editor
+preview
+checkout
+cuenta
+biblioteca de compras
+descarga
+Diseñador
+
+Inicialmente NO un dashboard complejo.
+
+Tú puedes hacer manualmente:
+
+Diseñador
+ ↓
+Formulario
+ ↓
+Tú revisas
+ ↓
+Subes producto
+ ↓
+Publicas
+
+Después construyes:
+
+Dashboard
+ ↓
+Subir producto
+ ↓
+Precio
+ ↓
+Archivos
+ ↓
+Estadísticas
+ ↓
+Comisiones
+
+No necesitas eso para conseguir tus primeros 10 diseñadores.
+
+28. Y hay algo que yo cambiaría respecto a tu idea original
+
+No obligaría al usuario a crear una cuenta antes de personalizar.
+
+Permitiría:
+
+“Probar este diseño”
+
+y después:
+
+Personaliza → Preview → Comprar → Crear cuenta automáticamente.
+
+Así reduces fricción.
+
+29. Tu posicionamiento inicial
+
+No utilizaría:
+
+“Marketplace de plantillas PDF.”
+
+Suena barato y técnico.
+
+Tampoco:
+
+“Marketplace de productos digitales.”
+
+Demasiado genérico.
+
+Probaría conceptos como:
+
+“Crea regalos que puedes imprimir, armar y personalizar.”
+
+o:
+
+“Diseños digitales para crear cosas reales.”
+
+o incluso:
+
+“Descubre. Personaliza. Imprime. Crea.”
+
+La idea que quiero que el usuario entienda inmediatamente es:
+
+“Yo puedo hacer esto en casa.”
+
+30. Y mi estrategia final para los 60 días sería
+DÍAS 1–10
+Nicho + marca + 5 productos propios
+              ↓
+DÍAS 11–20
+Landing + catálogo + checkout
+              ↓
+DÍAS 21–30
+Editor básico + 10 productos
+              ↓
+DÍAS 31–40
+Conseguir 10 diseñadores
+              ↓
+DÍAS 41–50
+30 productos + Pinterest/TikTok
+              ↓
+DÍAS 51–60
+Publicidad experimental
++ promociones
++ email
++ optimización
+              ↓
+          PRIMERAS VENTAS
+Mi apuesta concreta
+
+Si estuviera en tu posición, no intentaría ganar dinero inicialmente con miles de plantillas.
+
+Intentaría demostrar esta cadena:
+
+Un diseñador crea un diseño → alguien lo descubre en Pinterest/TikTok → lo personaliza con sus fotos → paga US$4.99–9.99 → descarga → lo imprime → lo arma → publica una foto → otra persona descubre el producto.
+
+Si consigues que ese ciclo ocurra aunque sea 20–30 veces durante los primeros 60 días, tienes las primeras señales de que el marketplace puede funcionar.
+
+Y después sí tendría sentido invertir seriamente en el marketplace abierto, dashboard de vendedores, sistema automático de comisiones, afiliados, bundles, licencias comerciales y un editor mucho más potente.

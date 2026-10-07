@@ -1,0 +1,681 @@
+Con esos nuevos puntos, yo cambiaría bastante el enfoque del proyecto. Ya no lo pensaría como “una tienda de PDFs con un editor”, sino como un marketplace de productos digitales personalizables para crafting.
+
+Y con $10,000 MXN + 2 meses + empezar desde cero, hay una regla que pondría por encima de todo:
+
+No construir el marketplace completo antes de demostrar que alguien quiere comprar.
+
+Tu objetivo de los primeros 60 días no debería ser tener una plataforma sofisticada. Debería ser conseguir la primera transacción, aunque tú seas inicialmente el primer vendedor.
+
+1. La idea central
+
+La propuesta podría resumirse así:
+
+Un marketplace donde diseñadores venden plantillas digitales personalizables y los compradores las convierten en productos físicos mediante impresión y armado DIY.
+
+Hay tres actores:
+
+             PLATAFORMA
+                 │
+       ┌─────────┴─────────┐
+       │                   │
+   DISEÑADORES          COMPRADORES
+       │                   │
+       ▼                   ▼
+ Plantillas PDF        Personalizan
+       │                   │
+       └─────────┬─────────┘
+                 ▼
+           PRODUCTO FÍSICO
+
+Y tú ganas una comisión por cada venta.
+
+Esto tiene una ventaja enorme respecto a tu idea original:
+
+no necesitas crear tú todo el catálogo.
+
+Tu trabajo inicial es crear:
+
+La plataforma.
+El editor.
+El sistema de venta.
+El sistema para que terceros publiquen.
+La audiencia.
+2. Pero hay una decisión importante
+
+Yo no abriría inmediatamente el marketplace a cualquiera.
+
+Aunque conceptualmente sea un marketplace abierto, durante los primeros dos meses haría:
+
+Fase inicial
+
+Marketplace curado
+
+Tú decides quién publica.
+
+Por ejemplo:
+
+“Conviértete en diseñador de nuestra plataforma.”
+
+El diseñador te manda sus diseños y tú los incorporas.
+
+Después de validar:
+
+Fase 2
+
+Marketplace abierto
+
+Crear cuenta
+     ↓
+Subir plantilla
+     ↓
+Definir precio
+     ↓
+Definir licencia
+     ↓
+Enviar a revisión
+     ↓
+Aprobación
+     ↓
+Publicación
+
+Esto reduce muchísimo el problema de moderación, fraude, copyright y diseños de baja calidad durante el lanzamiento.
+
+3. Tu primer catálogo debería ser pequeño
+
+No necesitas 500 diseños.
+
+Yo intentaría conseguir:
+
+20–30 plantillas iniciales
+
+Por ejemplo:
+
+Categoría   Plantillas
+Cumpleaños  5
+Pareja / aniversario    5
+Invitaciones    5
+Navidad 5
+Regalos 5
+Papercraft  5
+
+Pero incluso podrías comenzar con 10.
+
+Lo importante es que cada producto tenga una presentación espectacular.
+
+4. Tu ventaja competitiva NO será el editor
+
+Esto es muy importante.
+
+Tú dijiste:
+
+“Prefiero construir mi propio editor para ediciones sencillas, el mayor valor estará en las plantillas.”
+
+Estoy de acuerdo.
+
+Tu editor debería ser deliberadamente limitado.
+
+No intentes competir con Canva.
+
+Tu editor podría hacer solamente:
+
+Texto
+editar texto
+cambiar fuente
+tamaño
+alineación
+color
+Imágenes
+subir imagen
+recortar
+mover
+escalar
+reemplazar
+Elementos
+mostrar/ocultar
+cambiar algunos colores
+
+Y nada más inicialmente.
+
+5. El verdadero producto es la plantilla
+
+Imagina dos productos:
+
+Producto A
+
+“Plantilla de tarjeta pop-up”
+
+$2.99
+
+Preview mediocre.
+
+Producto B
+
+“Tarjeta Pop-Up — Cumpleaños de Mamá”
+
+Fotos reales del resultado:
+
+📷 cerrada
+📷 abierta
+📷 detalle
+📷 interior
+📷 alguien sosteniéndola
+📷 proceso de armado
+
+Video de 15 segundos.
+
+Después:
+
+Personaliza esta plantilla
+
+Ahí el segundo producto tiene mucho más valor percibido.
+
+6. Esto cambia cómo deben trabajar los vendedores
+
+Tu marketplace no debería decir solamente:
+
+“Sube tu PDF.”
+
+Debería pedir algo como:
+
+Crear producto
+
+Nombre
+Descripción
+Categoría
+Etiquetas
+
+Precio
+
+Archivos
+├── plantilla
+├── instrucciones
+└── archivos adicionales
+
+Imágenes
+├── producto terminado
+├── vista frontal
+├── vista interior
+└── proceso
+
+Video opcional
+
+Nivel de dificultad
+Tiempo aproximado
+Materiales necesarios
+Tamaño final
+
+Licencia
+○ Uso personal
+○ Uso comercial
+
+Esto convierte un simple PDF en un producto digital completo.
+
+7. La licencia puede convertirse en una fuente importante de ingresos
+
+Por ejemplo:
+
+Personal
+
+$3.99
+
+Puedes hacer el producto para ti.
+
+Comercial
+
+$9.99
+
+Puedes fabricar el producto y venderlo.
+
+Extended
+
+$19.99
+
+Permite determinados usos comerciales adicionales.
+
+Esto podría ser muy interesante para:
+
+vendedores de Etsy
+papelerías
+tiendas de regalos
+emprendedores
+decoradores
+negocios de eventos
+8. Tu modelo de comisión
+
+Supongamos:
+
+Producto: $5 USD
+
+Podrías plantear:
+
+Venta                  $5.00
+Diseñador 70%          $3.50
+Plataforma 30%         $1.50
+
+Pero no fijaría todavía el porcentaje definitivo.
+
+Primero necesitas conocer:
+
+comisión del procesador de pagos
+impuestos
+costo de infraestructura
+costo de adquisición
+posibles devoluciones
+costo de pagar a vendedores
+
+Con productos de precio muy bajo, estos costos pueden comerse una parte considerable del margen.
+
+Por eso probablemente terminarás necesitando bundles y productos premium.
+
+9. Y aquí aparece una oportunidad interesante
+
+No solamente vender:
+
+1 plantilla → $3
+
+También:
+
+Bundle
+
+10 tarjetas pop-up para cumpleaños
+
+$14.99
+
+Mega bundle
+
+50 diseños de crafting
+
+$29.99
+
+Colección de diseñador
+
+Colección completa de Ana García
+
+$24.99
+
+Así aumentas el ticket promedio.
+
+10. Tu presupuesto de $10,000 MXN
+
+Yo sería extremadamente conservador.
+
+No gastaría $10,000 en desarrollo.
+
+Tú eres desarrollador.
+
+Tu ventaja es que el desarrollo te cuesta principalmente tiempo, no dinero.
+
+Lo distribuiría aproximadamente así:
+
+Concepto    Presupuesto
+Dominio $300–500
+Hosting / infraestructura   $500–1,000
+Email / servicios   $300–500
+Procesamiento / pruebas $500
+Diseño / recursos iniciales $1,000
+Publicidad inicial  $4,000
+Contingencia    $2,000
+Total   ~$8,000–10,000
+
+Y reservaría una parte importante para adquisición de usuarios, no para tecnología.
+
+11. Los dos meses deberían verse así
+Semana 1
+Validación + branding
+
+Definir:
+
+nombre
+dominio
+propuesta de valor
+nicho inicial
+categorías
+modelo de comisión
+licencia
+
+Y crear:
+
+landing page.
+
+No necesitas todavía marketplace.
+
+Semana 2
+
+Crear tus primeros:
+
+5–10 productos.
+
+Como tú tienes habilidades de diseño gráfico, aquí tienes una ventaja importante.
+
+Haz productos que visualmente parezcan de una tienda profesional.
+
+Semana 3
+
+Construir:
+
+Marketplace básico
+Home
+├── Categorías
+├── Productos
+├── Producto individual
+├── Registro
+├── Login
+├── Checkout
+└── Descargas
+Semana 4
+
+Construir el editor.
+
+Pero extremadamente sencillo.
+
+Por ejemplo:
+
+┌─────────────────────────────────────┐
+│                                     │
+│        EDITOR                       │
+│                                     │
+│  ┌──────────────┐                   │
+│  │              │                   │
+│  │     FOTO     │                   │
+│  │              │                   │
+│  └──────────────┘                   │
+│                                     │
+│  Texto: [______________]            │
+│                                     │
+│  [Cambiar foto]                     │
+│                                     │
+│              [Preview]              │
+└─────────────────────────────────────┘
+12. Semana 5: venta
+
+Aquí hay una regla:
+
+El checkout debe funcionar antes de que el marketplace esté terminado.
+
+Necesitas conseguir:
+
+primera venta real.
+
+Aunque sea un producto de $49 MXN.
+
+Porque eso valida algo que ninguna encuesta puede validar.
+
+13. Semana 6: incorporar diseñadores
+
+Ahora sí:
+
+“¿Eres diseñador? Monetiza tus plantillas.”
+
+Contactaría directamente:
+
+diseñadores de papercraft
+diseñadores de SVG
+diseñadores de printables
+ilustradores
+diseñadores de tarjetas
+creadores de Etsy
+cuentas de crafting de Instagram
+creadores de Pinterest
+
+Y les ofrecería:
+
+Publica gratis y recibe X% de cada venta.
+
+14. Semana 7–8: adquisición
+
+Aquí gastaría el dinero.
+
+Principalmente:
+
+Pinterest
+
+Porque tu producto es extremadamente visual.
+
+Instagram
+
+Reels:
+
+“Mira cómo una hoja de papel se convierte en esto.”
+
+TikTok
+
+Proceso:
+
+PDF
+ ↓
+Impresora
+ ↓
+Cortar
+ ↓
+Doblar
+ ↓
+Pegar
+ ↓
+Producto terminado
+
+Eso puede ser contenido mucho más atractivo que un anuncio tradicional.
+
+15. Hay un concepto de marketing que explotaría
+
+No vendas:
+
+“PDF imprimible.”
+
+Vende:
+
+“Haz esto tú mismo.”
+
+Es una diferencia enorme.
+
+La emoción está en el resultado.
+
+Por ejemplo:
+
+De una hoja de papel a un regalo que parece comprado en una tienda.
+
+Ese es el producto.
+
+16. El contenido generado por los compradores puede ser parte del negocio
+
+Tu sexto paso original es muy bueno.
+
+Después de descargar:
+
+¿Ya lo armaste?
+
+📷 Sube una foto.
+
+¡Queremos verla!
+
+Y con autorización:
+
+Galería de la comunidad
+
+Diseño original
+       ↓
+Usuario A
+       ↓
+Foto real
+       ↓
+Usuario B
+       ↓
+"Quiero hacer uno"
+       ↓
+Producto
+
+Eso genera un ciclo de adquisición.
+
+17. Incluso podrías dar comisión por recomendar
+
+Más adelante:
+
+Programa de afiliados
+
+Un creador comparte:
+
+“Hice esta tarjeta con [tu plataforma].”
+
+Su enlace:
+
+tusitio.com/design/heart-card?ref=creator123
+
+Si alguien compra:
+
+el creador recibe 10%.
+
+Ya no necesitas depender exclusivamente de publicidad.
+
+18. Tu mayor riesgo
+
+No es tecnológico.
+
+Es este:
+
+Marketplace vacío.
+
+Un marketplace con:
+
+8 productos
+2 diseñadores
+0 compradores
+
+se siente muerto.
+
+Por eso inicialmente debes simular la densidad del marketplace.
+
+Es decir:
+
+Tú = primer diseñador.
+
+Después:
+
+Tú + 5 diseñadores.
+
+Después:
+
+Tú + 20 diseñadores.
+
+No esperes que los diseñadores creen el catálogo por ti.
+
+19. Tu segundo gran riesgo
+
+El precio.
+
+Si vendes:
+
+$1 USD
+
+y después de comisiones te quedan centavos, tienes un problema.
+
+Por eso investigaría rápidamente qué productos pueden venderse por:
+
+$3–10 USD
+
+en lugar de intentar competir en el segmento de plantillas extremadamente baratas.
+
+20. Tu MVP real
+
+Con tus restricciones, yo reduciría el proyecto a esto:
+
+                HOME
+                  │
+        ┌─────────┴─────────┐
+        │                   │
+    CATEGORÍAS           GALERÍA
+        │
+        ▼
+    PRODUCTO
+        │
+        ├── Fotos
+        ├── Video
+        ├── Descripción
+        ├── Precio
+        └── Personalizar
+                 │
+                 ▼
+              EDITOR
+                 │
+                 ▼
+             PREVIEW
+                 │
+                 ▼
+              PAGAR
+                 │
+                 ▼
+             DESCARGAR
+
+Y detrás:
+
+ADMIN
+ │
+ ├── Productos
+ ├── Diseñadores
+ ├── Ventas
+ ├── Comisiones
+ └── Usuarios
+
+Eso es suficiente para intentar conseguir la primera venta.
+
+21. Y dejaría fuera del MVP
+
+❌ Marketplace completamente automatizado
+❌ Dashboard avanzado para diseñadores
+❌ Sistema de reviews complejo
+❌ Chat entre usuarios
+❌ IA
+❌ Editor avanzado
+❌ Aplicación móvil
+❌ Sistema social
+❌ Suscripciones
+❌ Programa de afiliados
+❌ Multidioma avanzado
+❌ 3D realista
+❌ Integraciones de impresión
+
+Todo eso puede venir después.
+
+22. La métrica que realmente importa en estos dos meses
+
+No:
+
+“Tengo 50 usuarios registrados.”
+
+Ni:
+
+“Tengo 10,000 visitas.”
+
+Yo mediría:
+
+Número de transacciones pagadas
+
+Y secundariamente:
+
+Visitantes
+   ↓
+Producto visto
+   ↓
+"Personalizar"
+   ↓
+Editor iniciado
+   ↓
+Checkout
+   ↓
+Pago
+   ↓
+Descarga
+
+Porque ahí vas a descubrir dónde está realmente el problema.
+
+Y hay una última decisión que considero fundamental
+
+Con $10,000 MXN y 60 días, yo no intentaría lanzar un marketplace genérico de “plantillas para todo”.
+
+Escogería un micro-nicho inicial extremadamente visual, por ejemplo:
+
+Pop-up cards + papercraft personalizado
+
+y construiría la plataforma de tal forma que posteriormente pueda expandirse a:
+
+invitaciones → papercraft → juegos → regalos → decoración → printables → productos físicos DIY.
+
+Así no estás construyendo una plataforma pequeña; estás construyendo la primera versión de una plataforma más grande, pero validando primero un mercado muy concreto.

@@ -1,0 +1,47 @@
+Con un presupuesto de $10,000 MXN y una meta de primera venta en 2 meses, la conclusión clave es: el enfoque no puede ser construir un marketplace, sino validar la demanda con el modelo más ligero posible, y primero tú mismo como proveedor de plantillas.
+
+Construir un marketplace multiusuario completo requiere funcionalidad de pagos divididos, liquidación con vendedores, cumplimiento fiscal, gestión de calidad, etc., lo cual es completamente imposible de completar con $10,000 MXN en 2 meses. La estrategia más realista es: primero vender tus propias plantillas como "tienda individual", verificar que alguien compra, y luego abrir a vendedores externos con los ingresos obtenidos, iterando gradualmente.
+
+1. Por qué el MVP debe comenzar con "tienda individual" en lugar de "marketplace"
+La mayor dificultad de un marketplace no está en la parte frontal, sino en el flujo de fondos y el cumplimiento fiscal posterior. Según las normas fiscales mexicanas, si tu plataforma actúa como intermediaria de transacciones, conectando a terceros con compradores y participando en el cobro, puedes ser considerado "retenedor" (Retenedor), obligado a retener ISR e IVA para los vendedores, emitir CFDI, y asumir obligaciones de declaración mensual. Esto es completamente irreal para un proyecto inicial de $10,000 MXN.
+
+La legislación fiscal mexicana distingue claramente entre "vender directamente desde sitio propio" y "intermediar en plataforma", con implicaciones fiscales completamente diferentes. Comenzar como tienda individual te permite operar bajo las normas ordinarias de "actividad empresarial", sin necesidad de manejar retenciones para vendedores, cumplimiento entre países, y otras complejidades.
+
+Al validar la demanda de esta manera, tienes la oportunidad de usar datos reales de ventas para atraer a los primeros diseñadores, en lugar de construir primero una plataforma vacía para buscar proveedores.
+
+2. Desglose del presupuesto (versión realista)
+Concepto    Presupuesto sugerido    Explicación
+Dominio + alojamiento (2-3 meses)   ~$800 MXN   Vercel/Netlify gratis o de bajo costo, dominio aproximadamente $200-300 MXN/año
+Herramientas de diseño (Figma/Affinity) $0-800 MXN  Si ya tienes dominio, puedes saltar esto
+Procesamiento de pagos (Stripe/Paddle)  Pago por transacción    Stripe México aproximadamente 3.59% + $3 MXN/transacción
+Costos de publicidad/marketing  $3,000-5,000 MXN    Pinterest Ads o contenido orgánico, esta es la parte que más necesita reserva
+Reserva (imprevistos)   $2,000-3,000 MXN    
+Lo que no debes hacer: construir editor propio, desarrollar flujo de pagos divididos para marketplace, hacer previsualización 3D. Con $10,000 MXN solo puedes hacer un producto "usable", no un producto "completo".
+
+3. Estrategia de verificación en 2 meses
+Semana 1-2: hacer 3-5 plantillas pop-up
+Como ya tienes capacidad de diseño, primero produce unas 5 plantillas pop-up. Referencia los precios de Etsy: las tarjetas pop-up individuales generalmente se venden entre $3-5 USD (aproximadamente $60-100 MXN). Haz una versión de "previsualización estática": muestra imágenes de alta calidad del efecto terminado, combinadas con un editor simple (incluso puede ser un formulario: el usuario sube su foto, ingresa texto, tú generas el PDF manualmente).
+
+Semana 3-4: lanzar página de ventas simple
+Usa Carrd, Framer, o Next.js construye una página de aterrizaje mínima viable. La página necesita: galería de imágenes del efecto de plantillas, un botón "personalizar", un proceso simple de pago Stripe (sin necesidad de cuentas de usuario, pago directo para recibir el archivo). La entrega puede ser automática vía webhook de Stripe que envía un email con enlace de descarga, o al principio envías manualmente el email.
+
+Semana 5-6: invertir $3,000-5,000 MXN en probar Pinterest
+Pinterest es el canal de adquisición más natural para pop-up cards, manualidades DIY, invitaciones personalizadas. Publica videos del proceso de armado (incluso grabados con teléfono), guía tráfico a la página de ventas. No uses anuncios de Instagram, son demasiado caros y la intención del usuario no es suficientemente fuerte.
+
+Semana 7-8: evaluar datos
+
+Si tienes 5-10 ventas reales (incluso a bajo precio), significa que la demanda existe. Puedes invertir las ganancias y más tiempo en un editor más completo, y comenzar a invitar a 1-2 diseñadores a probar la carga de plantillas.
+
+Si tienes 0 ventas, significa que el problema es la demanda o los canales, no la funcionalidad. En este momento cambiar funcionalidades no ayuda, necesitas ajustar posicionamiento, precios, o métodos de promoción.
+
+4. Sobre Stripe Connect (funcionalidad de pagos divididos para marketplace)
+Stripe Connect es efectivamente una opción viable para la liquidación de marketplaces, permite dividir automáticamente los fondos entre la plataforma y los vendedores. Pero tiene dos problemas:
+
+Cumplimiento fiscal no desaparece: Incluso si Stripe completa automáticamente la división de fondos, siempre que tu plataforma constituya una "intermediación de servicios digitales" según la legislación fiscal mexicana, las obligaciones de retención siguen recayendo en ti. Stripe automatiza el "movimiento de dinero", no la "declaración de impuestos".
+
+Tiempo de integración y costos: La integración de Stripe Connect requiere diseño de onboarding para vendedores, verificación KYC, lógica de processing fees, etc., lo cual es un ciclo de desarrollo completamente diferente a un checkout de tienda individual.
+
+Sugerencia: Después de 3-6 meses de ventas estables como tienda individual, si decides abrir a vendedores externos, entonces considera Stripe Connect. En ese momento tendrás datos que te dirán cuánto precio pueden aceptar los vendedores, qué comisión es razonable, en lugar de diseñar reglas desde cero.
+
+5. La lógica de transición del modelo "marketplace"
+Cuando realmente vayas a abrir a vendedores externos, la referencia de estructura de comisiones puede ser Sixshop: las ventas de plantillas de pago se liquidan al 85% para el creador, la plataforma retiene el 15%. Pero esto es una decisión de etapa posterior. En la fase actual, tu objetivo principal es responder una pregunta: ¿Alguien está dispuesto a pagar $80 MXN por una plantilla pop-up que puede personalizar y descargar por sí mismo? Si la respuesta es no, toda la construcción del marketplace carece de significado.

@@ -1,0 +1,16 @@
+Quiero hacer un brainstorm sobre el siguiente proyecto:
+Usa superpowers:brainstorming skill.
+
+Soy desarrollador fullstack especializado en e-commerce y plataformas web, estoy buscando crear un negocio en internet que me permita vender a cualquier pais algún producto digital, en este momento tengo una idea de un sitio web que permita personalizar una plantilla PDF para imprimir un tipo invitación o paginas plegables estilo pop up. El usuario selecciona una plantilla basandose en las fotos del acabado final del producto que puede ver en el sitio web y usar una plantilla o empezarlo a editar esa plantilla con sus propias imagenes y textos, debe poder tener una visualización previa y aproximada de como quedaría el producto final para finalmente descargar la plantilla si es gratuita o pagar por ese diseño de plantilla que el mismo ya personalizó.
+
+Los pasos de interacción del cliente con el sitio web seria el siguiente:
+
+1.- Entrar al sitio web y ver ejemplos de proyectos terminados y como lucen (estilo pinterest)
+2.- Al encontrar algo de su interes el usuario entra en la página de la plantilla y puede descargar la plantilla o empezar a editarla
+3.- Después de terminar de editarla o elegir esa plantilla para descargar ver si es gratuita o si tiene un costo
+4.- Si es de costo mostrar el formulario de pago con tarjeta 
+5.- Despues de aprobar el pago se le envía a su cuenta de correo y se le permite descargarla desde un botón que se manda a su cuenta de correo
+6.- Después de descargarlo se invita al usuario a mandar las fotos de tu proyecto terminado a alguna red social que administramos como parte de la galeria de ideas que otro clientes
+
+Mi publico de momento serían los entuciastas del hagalo usted mismo, gente con intereses en la creatividad y el arte, el pop-up y el crafting de diseñar y armar articulos personalizados
+
