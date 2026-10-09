@@ -12,13 +12,14 @@ function optional(name: string, fallback = ""): string {
 
 export const env = {
   databaseUrl: () => required("DATABASE_URL"),
-  s3: () => ({
-    endpoint: optional("S3_ENDPOINT") || undefined,
-    region: optional("S3_REGION", "us-east-1"),
-    bucket: required("S3_BUCKET"),
-    accessKeyId: required("S3_ACCESS_KEY_ID"),
-    secretAccessKey: required("S3_SECRET_ACCESS_KEY"),
-    publicUrl: optional("S3_PUBLIC_URL"),
+  r2: () => ({
+    accountId: required("R2_ACCOUNT_ID"),
+    accessKeyId: required("R2_ACCESS_KEY_ID"),
+    secretAccessKey: required("R2_SECRET_ACCESS_KEY"),
+    bucket: required("R2_BUCKET"),
+    endpoint: `https://${required("R2_ACCOUNT_ID")}.r2.cloudflarestorage.com`,
+    region: "auto",
+    cdnUrl: optional("NEXT_PUBLIC_CDN_URL"),
   }),
   siteUrl: () => optional("NEXT_PUBLIC_SITE_URL", "http://localhost:3000"),
 };

@@ -4,7 +4,11 @@ Pop-up cards personalizables: galería estilo Pinterest → editor formulario �
 
 ## Estado del repo
 
-Pre-implementación: no hay código, README, manifiestos, tests ni CI. Solo `brainstorm/` (exploración) y la spec aprobada. No inventes comandos build/test/lint: aún no existen. Cuando se cree el scaffold, actualiza este archivo con los comandos reales.
+SPEC 01 implementada en la rama `spec-01-fundacion-catalogo-bilingue`: scaffold Next.js 16 App Router + TS + Tailwind v4 + `next-intl` (`/es` default, `/en`), Drizzle + Postgres, R2, catálogo bilingüe con SEO y seed. Comandos reales:
+
+- `npm run dev` / `npm run build` / `npm run start` / `npm run lint`
+- `npm run db:generate` / `npm run db:migrate` / `npm run db:push` / `npm run db:studio` / `npm run db:seed`
+- Deploy: Railway (Nixpacks, ver `railway.json`; el arranque aplica migraciones y expone `/api/health`).
 
 ## Fuente de verdad
 

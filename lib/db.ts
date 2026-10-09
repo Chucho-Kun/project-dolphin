@@ -1,9 +1,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 import { sql } from "drizzle-orm";
+import * as schema from "@/db/schema";
 
 let client: ReturnType<typeof postgres> | null = null;
-let dbInstance: ReturnType<typeof drizzle> | null = null;
+let dbInstance: ReturnType<typeof drizzle<typeof schema>> | null = null;
 
 export function getDb() {
   if (dbInstance) return dbInstance;
@@ -12,7 +13,7 @@ export function getDb() {
     throw new Error("DATABASE_URL no está configurada.");
   }
   client = postgres(url, { max: 5 });
-  dbInstance = drizzle(client);
+  dbInstance = drizzle(client, { schema });
   return dbInstance;
 }
 

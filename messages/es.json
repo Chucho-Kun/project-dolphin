@@ -1,9 +1,40 @@
 {
+  "nav": {
+    "home": "Inicio",
+    "language": "Idioma"
+  },
+  "common": {
+    "es": "Español",
+    "en": "English"
+  },
   "home": {
     "title": "Plantillas pop-up",
     "subtitle": "Catálogo de plantillas personalizables",
+    "bannerTitle": "Arma tu tarjeta pop-up en minutos",
+    "bannerSubtitle": "Elige una plantilla, personalízala y descarga tu PDF listo para imprimir.",
     "empty": "Aún no hay plantillas publicadas. Vuelve pronto.",
     "free": "GRATIS",
-    "customize": "PERSONALIZAR"
+    "customize": "PERSONALIZAR",
+    "viewTemplate": "Ver plantilla"
+  },
+  "category": {
+    "empty": "Aún no hay plantillas en esta categoría.",
+    "backToHome": "Volver al inicio",
+    "templateCount": "{count, plural, =0 {Sin plantillas} one {# plantilla} other {# plantillas}}"
+  },
+  "product": {
+    "customize": "PERSONALIZAR",
+    "free": "GRATIS",
+    "difficulty": "Dificultad",
+    "assemblyTime": "Tiempo de armado",
+    "minutes": "{min} min",
+    "materials": "Materiales",
+    "backToCatalog": "Volver al catálogo",
+    "notFound": "Esta plantilla no existe."
+  },
+  "editor": {
+    "placeholderTitle": "Editor en construcción",
+    "placeholderDesc": "La personalización de {code} estará disponible muy pronto.",
+    "backToTemplate": "Volver a la plantilla"
   }
 }

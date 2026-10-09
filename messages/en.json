@@ -1,9 +1,40 @@
 {
+  "nav": {
+    "home": "Home",
+    "language": "Language"
+  },
+  "common": {
+    "es": "Español",
+    "en": "English"
+  },
   "home": {
     "title": "Pop-up templates",
     "subtitle": "Catalog of customizable templates",
+    "bannerTitle": "Build your pop-up card in minutes",
+    "bannerSubtitle": "Pick a template, customize it and download your print-ready PDF.",
     "empty": "No templates published yet. Check back soon.",
     "free": "FREE",
-    "customize": "CUSTOMIZE"
+    "customize": "CUSTOMIZE",
+    "viewTemplate": "View template"
+  },
+  "category": {
+    "empty": "No templates in this category yet.",
+    "backToHome": "Back to home",
+    "templateCount": "{count, plural, =0 {No templates} one {# template} other {# templates}}"
+  },
+  "product": {
+    "customize": "CUSTOMIZE",
+    "free": "FREE",
+    "difficulty": "Difficulty",
+    "assemblyTime": "Assembly time",
+    "minutes": "{min} min",
+    "materials": "Materials",
+    "backToCatalog": "Back to catalog",
+    "notFound": "This template does not exist."
+  },
+  "editor": {
+    "placeholderTitle": "Editor under construction",
+    "placeholderDesc": "Customization of {code} will be available very soon.",
+    "backToTemplate": "Back to the template"
   }
 }

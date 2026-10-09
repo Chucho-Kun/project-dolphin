@@ -1,30 +1,34 @@
 import { S3Client, ListBucketsCommand, HeadBucketCommand } from "@aws-sdk/client-s3";
 
-let s3Instance: S3Client | null = null;
+let r2Instance: S3Client | null = null;
+
+export function r2Endpoint(): string {
+  const accountId = process.env.R2_ACCOUNT_ID;
+  if (!accountId) throw new Error("R2_ACCOUNT_ID no está configurado.");
+  return `https://${accountId}.r2.cloudflarestorage.com`;
+}
 
 export function getStorageClient(): S3Client {
-  if (s3Instance) return s3Instance;
-  const endpoint = process.env.S3_ENDPOINT || undefined;
-  const region = process.env.S3_REGION || "us-east-1";
-  const accessKeyId = process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
+  if (r2Instance) return r2Instance;
+  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
 
   if (!accessKeyId || !secretAccessKey) {
-    throw new Error("Faltan S3_ACCESS_KEY_ID / S3_SECRET_ACCESS_KEY.");
+    throw new Error("Faltan R2_ACCESS_KEY_ID / R2_SECRET_ACCESS_KEY.");
   }
 
-  s3Instance = new S3Client({
-    endpoint,
-    region,
-    forcePathStyle: Boolean(endpoint),
+  r2Instance = new S3Client({
+    endpoint: r2Endpoint(),
+    region: "auto",
+    forcePathStyle: true,
     credentials: { accessKeyId, secretAccessKey },
   });
-  return s3Instance;
+  return r2Instance;
 }
 
 export function getBucket(): string {
-  const bucket = process.env.S3_BUCKET;
-  if (!bucket) throw new Error("S3_BUCKET no está configurado.");
+  const bucket = process.env.R2_BUCKET;
+  if (!bucket) throw new Error("R2_BUCKET no está configurado.");
   return bucket;
 }
 
@@ -34,15 +38,26 @@ export async function checkStorage(): Promise<{
   buckets?: string[];
   error?: string;
 }> {
-  if (!process.env.S3_ACCESS_KEY_ID || !process.env.S3_SECRET_ACCESS_KEY) {
-    return { ok: false, skipped: true, error: "Credenciales S3 ausentes" };
+  if (
+    !process.env.R2_ACCOUNT_ID ||
+    !process.env.R2_ACCESS_KEY_ID ||
+    !process.env.R2_SECRET_ACCESS_KEY
+  ) {
+    return { ok: false, skipped: true, error: "Credenciales R2 ausentes" };
   }
   try {
     const s3 = getStorageClient();
-    const listed = await s3.send(new ListBucketsCommand({}));
-    const buckets = (listed.Buckets ?? []).map((b) => b.Name ?? "");
+    // Los tokens R2 acotados a un bucket no permiten ListBuckets
+    // ("Access Denied"). En ese caso se valida directo contra el bucket.
+    let buckets: string[] = [];
+    try {
+      const listed = await s3.send(new ListBucketsCommand({}));
+      buckets = (listed.Buckets ?? []).map((b) => b.Name ?? "");
+    } catch {
+      buckets = [];
+    }
 
-    const bucket = process.env.S3_BUCKET;
+    const bucket = process.env.R2_BUCKET;
     if (bucket) {
       try {
         await s3.send(new HeadBucketCommand({ Bucket: bucket }));
@@ -53,6 +68,7 @@ export async function checkStorage(): Promise<{
           error: `No se pudo acceder al bucket "${bucket}": ${error instanceof Error ? error.message : String(error)}`,
         };
       }
+      if (buckets.length === 0) buckets = [bucket];
     }
     return { ok: true, buckets };
   } catch (error) {
@@ -61,7 +77,7 @@ export async function checkStorage(): Promise<{
 }
 
 export function publicUrlFor(key: string): string {
-  const base = (process.env.S3_PUBLIC_URL ?? "").replace(/\/$/, "");
+  const base = (process.env.NEXT_PUBLIC_CDN_URL ?? "").replace(/\/$/, "");
   if (!base) return key;
   return `${base}/${key.replace(/^\//, "")}`;
 }
