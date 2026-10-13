@@ -13,7 +13,7 @@ export default function Header() {
   const placeholder = tHeader("buscar");
 
   return (
-    <header className="border-b bg-white">
+    <header className="border-b fondo-web">
       <div className="mx-auto flex max-w-6xl items-center gap-3 px-4 py-3">
         <Link href="/" aria-label="Project Dolphin" className="shrink-0">
           <Image

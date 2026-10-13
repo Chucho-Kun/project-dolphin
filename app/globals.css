@@ -10,6 +10,10 @@ body {
   background-color: var(--color-dolphin-cream);
 }
 
+.fondo-web{
+  background-color: var(--color-dolphin-cream);
+}
+
 /* Pill de búsqueda estilo Etsy */
 .dolphin-search-pill {
   border-radius: 9999px;

@@ -11,7 +11,7 @@ export default async function Footer() {
   ];
 
   return (
-    <footer className="mt-12 border-t bg-white">
+    <footer className="mt-12 fondo-web">
       <div className="mx-auto grid max-w-6xl grid-cols-2 gap-8 px-4 py-10 md:grid-cols-3">
         {columnas.map((col) => (
           <nav key={col.titulo} aria-label={col.titulo}>
@@ -28,7 +28,7 @@ export default async function Footer() {
           </nav>
         ))}
       </div>
-      <div className="border-t bg-neutral-100">
+      <div className="border-t border-gray-300 fondo-web">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-3 px-4 py-4 text-xs text-neutral-600 sm:flex-row">
           <span aria-hidden="true" className="flex items-center gap-4">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
