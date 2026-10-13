@@ -15,7 +15,51 @@
     "empty": "Aún no hay plantillas publicadas. Vuelve pronto.",
     "free": "GRATIS",
     "customize": "PERSONALIZAR",
-    "viewTemplate": "Ver plantilla"
+    "viewTemplate": "Ver plantilla",
+    "categorias": {
+      "todos": "Todos",
+      "ofertas": "Ofertas",
+      "letras": "Letras",
+      "pared": "Decoración de pared",
+      "figuras": "Figuras y personajes",
+      "mascaras": "máscaras",
+      "numeros": "Números",
+      "svg": "SVG"
+    },
+    "destacados": {
+      "titulo": "Artículos destacados"
+    },
+    "todos": {
+      "titulo": "Todos los artículos"
+    }
+  },
+  "layout": {
+    "header": {
+      "buscar": "Busca lo que se te ocurra",
+      "menu": "Menú"
+    },
+    "footer": {
+      "compra": {
+        "titulo": "Compra",
+        "l1": "Plantillas pop-up",
+        "l2": "Tarjeta de regalo",
+        "l3": "Mapa del sitio"
+      },
+      "sobre": {
+        "titulo": "Sobre Dolphin",
+        "l1": "Sobre nosotros",
+        "l2": "Políticas"
+      },
+      "ayuda": {
+        "titulo": "Ayuda",
+        "l1": "Centro de ayuda",
+        "l2": "Privacidad"
+      },
+      "legal": {
+        "condiciones": "Condiciones de uso",
+        "privacidad": "Privacidad"
+      }
+    }
   },
   "category": {
     "empty": "Aún no hay plantillas en esta categoría.",

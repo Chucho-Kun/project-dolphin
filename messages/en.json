@@ -15,7 +15,51 @@
     "empty": "No templates published yet. Check back soon.",
     "free": "FREE",
     "customize": "CUSTOMIZE",
-    "viewTemplate": "View template"
+    "viewTemplate": "View template",
+    "categorias": {
+      "todos": "All",
+      "ofertas": "Deals",
+      "letras": "Letters",
+      "pared": "Wall decor",
+      "figuras": "Figures & characters",
+      "mascaras": "Masks",
+      "numeros": "Numbers",
+      "svg": "SVG"
+    },
+    "destacados": {
+      "titulo": "Featured items"
+    },
+    "todos": {
+      "titulo": "All items"
+    }
+  },
+  "layout": {
+    "header": {
+      "buscar": "Search for anything",
+      "menu": "Menu"
+    },
+    "footer": {
+      "compra": {
+        "titulo": "Shop",
+        "l1": "Pop-up templates",
+        "l2": "Gift card",
+        "l3": "Site map"
+      },
+      "sobre": {
+        "titulo": "About Dolphin",
+        "l1": "About us",
+        "l2": "Policies"
+      },
+      "ayuda": {
+        "titulo": "Help",
+        "l1": "Help center",
+        "l2": "Privacy"
+      },
+      "legal": {
+        "condiciones": "Terms of use",
+        "privacidad": "Privacy"
+      }
+    }
   },
   "category": {
     "empty": "No templates in this category yet.",

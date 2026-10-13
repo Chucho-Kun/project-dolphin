@@ -1,1 +1,38 @@
 @import "tailwindcss";
+
+@theme {
+  --color-dolphin-cream: #fdf6ec;
+  --color-dolphin-price: #0f7b3d;
+  --color-dolphin-muted: #6b7280;
+}
+
+body {
+  background-color: var(--color-dolphin-cream);
+}
+
+/* Pill de búsqueda estilo Etsy */
+.dolphin-search-pill {
+  border-radius: 9999px;
+  border: 2px solid #222;
+  background-color: #fff;
+}
+
+/* Card estilo Etsy */
+.dolphin-card {
+  border-radius: 0.5rem;
+  border: 1px solid rgb(0 0 0 / 0.08);
+  background-color: #fff;
+  overflow: hidden;
+}
+
+/* Precio verde formato diseño */
+.dolphin-price {
+  color: var(--color-dolphin-price);
+  font-weight: 700;
+}
+
+/* Precio anterior tachado gris */
+.dolphin-price-old {
+  color: var(--color-dolphin-muted);
+  text-decoration: line-through;
+}
