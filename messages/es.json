@@ -74,7 +74,57 @@
     "minutes": "{min} min",
     "materials": "Materiales",
     "backToCatalog": "Volver al catálogo",
-    "notFound": "Esta plantilla no existe."
+    "notFound": "Esta plantilla no existe.",
+    "galeria": {
+      "anterior": "Foto anterior",
+      "siguiente": "Foto siguiente",
+      "miniatura": "Ver foto {n}"
+    },
+    "info": {
+      "oferta": "Oferta por tiempo limitado",
+      "vendidoPor": "Vendido por",
+      "editar": "Editar diseño",
+      "anadirCarrito": "Añadir al carrito",
+      "proximamente": "Próximamente",
+      "favorito": "Añadir a favoritos"
+    },
+    "detalles": {
+      "titulo": "Detalles del artículo",
+      "archivosTitulo": "Archivos incluidos",
+      "archivoPdf": "Plantilla PDF",
+      "archivoSvg": "Archivos de corte SVG",
+      "archivoDxf": "Archivos de corte DXF",
+      "archivoInstrucciones": "Instrucciones de montaje"
+    },
+    "resenas": {
+      "titulo": "Reseñas",
+      "ordenar": "Ordenar",
+      "vacio": "Aún no hay reseñas",
+      "r1": {
+        "nombre": "María G.",
+        "fecha": "12 de mayo de 2026",
+        "texto": "Se arma en pocos minutos y queda muy firme. Las instrucciones son claras.",
+        "producto": "Tarjeta pop-up floral"
+      },
+      "r2": {
+        "nombre": "Carlos R.",
+        "fecha": "28 de junio de 2026",
+        "texto": "Buena calidad de impresión y los dobleces quedan precisos. La recomiendo.",
+        "producto": "Tarjeta pop-up de cumpleaños"
+      },
+      "r3": {
+        "nombre": "Ana L.",
+        "fecha": "3 de agosto de 2026",
+        "texto": "La personalización quedó tal como la vista previa. El archivo llegó muy rápido.",
+        "producto": "Tarjeta pop-up de boda"
+      }
+    },
+    "muestra": {
+      "etiqueta": "Datos de muestra"
+    },
+    "relacionados": {
+      "titulo": "También podría interesarte"
+    }
   },
   "editor": {
     "placeholderTitle": "Editor en construcción",

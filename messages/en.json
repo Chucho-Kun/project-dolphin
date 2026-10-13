@@ -74,7 +74,57 @@
     "minutes": "{min} min",
     "materials": "Materials",
     "backToCatalog": "Back to catalog",
-    "notFound": "This template does not exist."
+    "notFound": "This template does not exist.",
+    "galeria": {
+      "anterior": "Previous photo",
+      "siguiente": "Next photo",
+      "miniatura": "View photo {n}"
+    },
+    "info": {
+      "oferta": "Limited-time offer",
+      "vendidoPor": "Sold by",
+      "editar": "Edit design",
+      "anadirCarrito": "Add to cart",
+      "proximamente": "Coming soon",
+      "favorito": "Add to favorites"
+    },
+    "detalles": {
+      "titulo": "Item details",
+      "archivosTitulo": "Included files",
+      "archivoPdf": "PDF template",
+      "archivoSvg": "SVG cut files",
+      "archivoDxf": "DXF cut files",
+      "archivoInstrucciones": "Assembly instructions"
+    },
+    "resenas": {
+      "titulo": "Reviews",
+      "ordenar": "Sort",
+      "vacio": "No reviews yet",
+      "r1": {
+        "nombre": "Maria G.",
+        "fecha": "May 12, 2026",
+        "texto": "It assembles in a few minutes and stands very sturdy. The instructions are clear.",
+        "producto": "Floral pop-up card"
+      },
+      "r2": {
+        "nombre": "Carlos R.",
+        "fecha": "June 28, 2026",
+        "texto": "Good print quality and the folds come out precise. I recommend it.",
+        "producto": "Birthday pop-up card"
+      },
+      "r3": {
+        "nombre": "Ana L.",
+        "fecha": "August 3, 2026",
+        "texto": "The customization matched the preview exactly. The file arrived very fast.",
+        "producto": "Wedding pop-up card"
+      }
+    },
+    "muestra": {
+      "etiqueta": "Sample data"
+    },
+    "relacionados": {
+      "titulo": "You may also like"
+    }
   },
   "editor": {
     "placeholderTitle": "Editor under construction",

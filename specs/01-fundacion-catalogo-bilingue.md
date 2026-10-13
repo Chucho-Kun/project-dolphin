@@ -1,6 +1,6 @@
 # SPEC 01 — Fundación bilingüe + catálogo
 
-> **Estado:** Aprovado
+> **Estado:** Implementado
 > **Depende de:** ninguna (primera de la serie)
 > **Fecha:** 2026-10-09
 > **Objetivo:** Dejar en producción el sitio bilingüe ES/EN con el catálogo de plantillas servido desde Postgres, listo para construir el editor encima.

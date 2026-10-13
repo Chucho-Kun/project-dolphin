@@ -4,10 +4,17 @@ import { eq, or } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { getDb } from "@/lib/db";
-import { publicUrlFor } from "@/lib/storage";
 import { absoluteUrl } from "@/lib/site";
 import { products, type Product } from "@/db/schema";
 import type { Locale } from "@/i18n/routing";
+import ProductGallery from "@/components/ProductGallery";
+import ProductInfo from "@/components/ProductInfo";
+import ProductReviews from "@/components/ProductReviews";
+import RelatedProducts from "@/components/RelatedProducts";
+import {
+  FOTO_FALLBACK_LOCAL,
+  FOTO_PRUEBA_CDN,
+} from "@/components/ProductImage";
 
 export const dynamic = "force-dynamic";
 
@@ -63,15 +70,18 @@ export default async function ProductPage({
   const isEs = locale === "es";
   const title = isEs ? product.tituloEs : product.tituloEn;
   const description = isEs ? product.descripcionEs : product.descripcionEn;
-  const photoKey = product.fotoAbiertaKey ?? product.fotoCerradaKey;
-  const photoUrl = photoKey ? publicUrlFor(photoKey) : null;
 
+  // SPEC 1.3 (temporal): foto única de prueba repetida. Se reemplaza por
+  // fotos reales R2 en otro spec.
+  const fotos = [FOTO_PRUEBA_CDN];
+
+  // SPEC 1.3: el JSON-LD omite `image` cuando solo hay foto de prueba y
+  // nunca lleva `AggregateRating` de muestra.
   const jsonLd: Record<string, unknown> = {
     "@context": "https://schema.org",
     "@type": "Product",
     name: title,
     description,
-    ...(photoUrl && photoUrl.startsWith("http") ? { image: photoUrl } : {}),
     offers: {
       "@type": "Offer",
       price: "0",
@@ -91,56 +101,36 @@ export default async function ProductPage({
       </Link>
 
       <div className="mt-4 grid gap-8 md:grid-cols-2">
-        <div className="relative overflow-hidden rounded-xl bg-neutral-100">
-          {photoUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img
-              src={photoUrl}
-              alt={title}
-              className="aspect-square w-full object-cover"
-            />
-          ) : null}
-          {product.esGratis ? (
-            <span className="absolute left-3 top-3 rounded bg-green-600 px-2 py-1 text-xs font-bold text-white">
-              {t("free")}
-            </span>
-          ) : null}
+        <div className="min-w-0">
+          <ProductGallery
+            fotos={fotos}
+            alt={title}
+            fallbackSrc={FOTO_FALLBACK_LOCAL}
+            prevLabel={t("galeria.anterior")}
+            nextLabel={t("galeria.siguiente")}
+            thumbnailLabels={fotos.map((_, index) =>
+              t("galeria.miniatura", { n: index + 1 }),
+            )}
+          />
         </div>
 
-        <div>
-          <p className="text-xs font-mono text-neutral-500">{product.code}</p>
-          <h1 className="mt-1 text-3xl font-bold">{title}</h1>
-          <p className="mt-3 text-neutral-700">{description}</p>
-
-          <dl className="mt-6 space-y-2 text-sm">
-            {product.dificultad ? (
-              <div className="flex gap-2">
-                <dt className="font-semibold">{t("difficulty")}:</dt>
-                <dd>{product.dificultad}</dd>
-              </div>
-            ) : null}
-            {product.tiempoMin !== null ? (
-              <div className="flex gap-2">
-                <dt className="font-semibold">{t("assemblyTime")}:</dt>
-                <dd>{t("minutes", { min: product.tiempoMin })}</dd>
-              </div>
-            ) : null}
-            {product.materiales ? (
-              <div className="flex gap-2">
-                <dt className="font-semibold">{t("materials")}:</dt>
-                <dd>{product.materiales}</dd>
-              </div>
-            ) : null}
-          </dl>
-
-          <Link
-            href={`/editor/${product.code}`}
-            className="mt-8 inline-block rounded-lg bg-black px-6 py-3 font-bold text-white hover:bg-neutral-800"
-          >
-            {t("customize")}
-          </Link>
+        <div className="min-w-0">
+          <ProductInfo
+            title={title}
+            description={description}
+            code={product.code}
+            esGratis={product.esGratis}
+          />
         </div>
       </div>
+
+      <ProductReviews />
+
+      <RelatedProducts
+        currentId={product.id}
+        categoryId={product.categoryId}
+        locale={locale}
+      />
     </main>
   );
 }

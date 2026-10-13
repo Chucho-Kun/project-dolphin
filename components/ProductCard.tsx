@@ -1,7 +1,9 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
-import { publicUrlFor } from "@/lib/storage";
-import ProductImage from "@/components/ProductImage";
+import ProductImage, {
+  FOTO_FALLBACK_LOCAL,
+  FOTO_PRUEBA_CDN,
+} from "@/components/ProductImage";
 import type { Product } from "@/db/schema";
 
 // Provisional hasta el spec de precios: la tabla `products` no tiene
@@ -21,13 +23,11 @@ export default async function ProductCard({
   const isEs = locale === "es";
   const title = isEs ? product.tituloEs : product.tituloEn;
   const slug = isEs ? product.slugEs : product.slugEn;
-  const photoKey = product.fotoAbiertaKey ?? product.fotoCerradaKey;
 
   const precio = PRECIOS_PROVISIONALES.porDefecto;
-  // Imagen local de prueba según el spec (cards sin foto en R2).
-  const fallbackSrc = "/images/product-example.webp";
-  const photoSrc =
-    photoKey != null ? publicUrlFor(photoKey) : fallbackSrc;
+  // SPEC 1.3 (temporal): foto única de prueba repetida en todas las cards.
+  const fallbackSrc = FOTO_FALLBACK_LOCAL;
+  const photoSrc = FOTO_PRUEBA_CDN;
 
   return (
     <li className="dolphin-card">

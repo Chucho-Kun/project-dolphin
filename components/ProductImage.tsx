@@ -2,6 +2,11 @@
 
 import { useState } from "react";
 
+// SPEC 1.3 (temporal): foto única de prueba. Se reemplaza por fotos reales R2 en otro spec.
+export const FOTO_PRUEBA_CDN =
+  "https://cdn.ferredip.com.mx/fotos/product-example.webp"; // verificada 2026-10-13: 200 image/webp
+export const FOTO_FALLBACK_LOCAL = "/images/product-example.webp"; // obligatorio si la CDN falla
+
 export default function ProductImage({
   src,
   fallbackSrc,
