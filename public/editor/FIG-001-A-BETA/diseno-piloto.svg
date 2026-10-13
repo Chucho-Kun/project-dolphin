@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.1" viewBox="0 0 595.28 841.89">
+  <!-- Generator: Adobe Illustrator 29.8.6, SVG Export Plug-In . SVG Version: 2.1.1 Build 1)  -->
+  <defs>
+    <style>
+      .st0 {
+        fill: #efefef;
+      }
+
+      .st1, .st2, .st3 {
+        fill: none;
+        stroke: #1d1d1b;
+        stroke-miterlimit: 10;
+      }
+
+      .st4 {
+        fill: #1d1d1b;
+        font-family: Roboto-ExtraBoldItalic, Roboto;
+        font-size: 20.73px;
+        font-style: italic;
+        font-weight: 700;
+      }
+
+      .st2 {
+        stroke-dasharray: 5.89 5.89;
+      }
+
+      .st3 {
+        stroke-dasharray: 5.77 5.77;
+      }
+    </style>
+  </defs>
+  <g id="zona-editable-1">
+    <rect class="st0" x="84.76" y="426.96" width="138.64" height="138.64"/>
+  </g>
+  <g id="zona-editable-2">
+    <rect class="st0" x="223.4" y="426.96" width="138.64" height="138.64"/>
+  </g>
+  <g id="zona-editable-3">
+    <rect class="st0" x="362.04" y="426.96" width="138.64" height="138.64"/>
+  </g>
+  <g id="texto-editable-nombre">
+    <text class="st4" transform="translate(232.63 354.56)"><tspan x="0" y="0">TU NOMBRE</tspan></text>
+  </g>
+  <g id="lineas">
+    <g>
+      <rect class="st1" x="223.4" y="149.68" width="138.64" height="138.64"/>
+      <rect class="st1" x="223.4" y="288.32" width="138.64" height="138.64"/>
+      <rect class="st1" x="223.4" y="426.96" width="138.64" height="138.64"/>
+      <rect class="st1" x="84.76" y="426.96" width="138.64" height="138.64"/>
+      <rect class="st1" x="362.04" y="426.96" width="138.64" height="138.64"/>
+      <rect class="st1" x="223.4" y="565.6" width="138.64" height="138.64"/>
+    </g>
+    <g>
+      <polygon class="st0" points="223.4 426.96 204.76 406.96 204.76 308.32 223.4 288.32 223.4 426.96"/>
+      <g>
+        <polyline class="st1" points="223.4 423.96 223.4 426.96 221.36 424.77"/>
+        <polyline class="st2" points="217.34 420.45 204.76 406.96 204.76 308.32 219.35 292.67"/>
+        <polyline class="st1" points="221.36 290.51 223.4 288.32 223.4 291.32"/>
+        <line class="st3" x1="223.4" y1="297.08" x2="223.4" y2="421.08"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="223.4 288.32 204.76 268.32 204.76 169.68 223.4 149.68 223.4 288.32"/>
+      <g>
+        <polyline class="st1" points="223.4 285.32 223.4 288.32 221.36 286.12"/>
+        <polyline class="st2" points="217.34 281.81 204.76 268.32 204.76 169.68 219.35 154.03"/>
+        <polyline class="st1" points="221.36 151.87 223.4 149.68 223.4 152.68"/>
+        <line class="st3" x1="223.4" y1="158.44" x2="223.4" y2="282.43"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="362.04 426.96 380.69 406.96 380.69 308.32 362.04 288.32 362.04 426.96"/>
+      <g>
+        <polyline class="st1" points="362.04 423.96 362.04 426.96 364.09 424.77"/>
+        <polyline class="st2" points="368.11 420.45 380.69 406.96 380.69 308.32 366.1 292.67"/>
+        <polyline class="st1" points="364.09 290.51 362.04 288.32 362.04 291.32"/>
+        <line class="st3" x1="362.04" y1="297.08" x2="362.04" y2="421.08"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="223.4 704.24 204.76 684.24 204.76 585.6 223.4 565.6 223.4 704.24"/>
+      <g>
+        <polyline class="st1" points="223.4 701.24 223.4 704.24 221.36 702.05"/>
+        <polyline class="st2" points="217.34 697.74 204.76 684.24 204.76 585.6 219.35 569.95"/>
+        <polyline class="st1" points="221.36 567.8 223.4 565.6 223.4 568.6"/>
+        <line class="st3" x1="223.4" y1="574.37" x2="223.4" y2="698.36"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="362.04 704.24 380.69 684.24 380.69 585.6 362.04 565.6 362.04 704.24"/>
+      <g>
+        <polyline class="st1" points="362.04 701.24 362.04 704.24 364.09 702.05"/>
+        <polyline class="st2" points="368.11 697.74 380.69 684.24 380.69 585.6 366.1 569.95"/>
+        <polyline class="st1" points="364.09 567.8 362.04 565.6 362.04 568.6"/>
+        <line class="st3" x1="362.04" y1="574.37" x2="362.04" y2="698.36"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="362.04 288.32 380.69 268.32 380.69 169.68 362.04 149.68 362.04 288.32"/>
+      <g>
+        <polyline class="st1" points="362.04 285.32 362.04 288.32 364.09 286.12"/>
+        <polyline class="st2" points="368.11 281.81 380.69 268.32 380.69 169.68 366.1 154.03"/>
+        <polyline class="st1" points="364.09 151.87 362.04 149.68 362.04 152.68"/>
+        <line class="st3" x1="362.04" y1="158.44" x2="362.04" y2="282.43"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="362.04 149.68 342.04 131.03 243.4 131.03 223.4 149.68 362.04 149.68"/>
+      <g>
+        <polyline class="st1" points="359.04 149.68 362.04 149.68 359.85 147.63"/>
+        <polyline class="st2" points="355.54 143.61 342.04 131.03 243.4 131.03 227.75 145.62"/>
+        <polyline class="st1" points="225.6 147.63 223.4 149.68 226.4 149.68"/>
+        <line class="st3" x1="232.17" y1="149.68" x2="356.16" y2="149.68"/>
+      </g>
+    </g>
+    <g>
+      <polygon class="st0" points="223.4 704.24 243.4 722.89 342.04 722.89 362.04 704.24 223.4 704.24"/>
+      <g>
+        <polyline class="st1" points="226.4 704.24 223.4 704.24 225.6 706.29"/>
+        <polyline class="st2" points="229.91 710.31 243.4 722.89 342.04 722.89 357.7 708.3"/>
+        <polyline class="st1" points="359.85 706.29 362.04 704.24 359.04 704.24"/>
+        <line class="st3" x1="353.28" y1="704.24" x2="229.29" y2="704.24"/>
+      </g>
+    </g>
+  </g>
+</svg>
