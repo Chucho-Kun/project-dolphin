@@ -1,9 +1,11 @@
 import {
   boolean,
   integer,
+  json,
   pgTable,
   serial,
   text,
+  timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
 
@@ -33,6 +35,8 @@ export const products = pgTable("products", {
   // existir antes de subir sus fotos.
   fotoCerradaKey: text("foto_cerrada_key"),
   fotoAbiertaKey: text("foto_abierta_key"),
+  // SPEC 02: key R2 del SVG base de la plantilla. Null = editor con aviso.
+  plantillaSvgKey: text("plantilla_svg_key"),
   dificultad: text("dificultad"),
   tiempoMin: integer("tiempo_min"),
   materiales: text("materiales"),
@@ -41,3 +45,47 @@ export const products = pgTable("products", {
 
 export type Category = typeof categories.$inferSelect;
 export type Product = typeof products.$inferSelect;
+
+// SPEC 02 — personalizaciones de invitados (sin cuentas).
+// `productCode` es el `code` canónico AAA-000 (FK a products.code).
+// `tokenSecreto` (UUIDv4) viaja solo como `?t=` para reapertura sin caducidad.
+// El PDF no se almacena: se genera en el cliente en cada descarga.
+// Last-write-wins por token: un PUT reemplaza imagenes+ajustes.
+export type CustomizationImagen = {
+  zonaId: string;
+  r2Key: string;
+};
+
+export type CustomizationAjusteImagen = {
+  zonaId: string;
+  x: number;
+  y: number;
+  escala: number;
+};
+
+export type CustomizationAjusteTexto = {
+  id: string;
+  contenido: string;
+  tamano: number;
+  color: string;
+  fuente: string;
+};
+
+export type CustomizationAjustes = {
+  imagenes: CustomizationAjusteImagen[];
+  textos: CustomizationAjusteTexto[];
+};
+
+export const customizations = pgTable("customizations", {
+  id: uuid("id").defaultRandom().primaryKey(),
+  productCode: text("product_code")
+    .notNull()
+    .references(() => products.code),
+  tokenSecreto: text("token_secreto").notNull().unique(),
+  imagenes: json("imagenes").$type<CustomizationImagen[]>().notNull(),
+  ajustes: json("ajustes").$type<CustomizationAjustes>().notNull(),
+  creadoEn: timestamp("creado_en").notNull().defaultNow(),
+  actualizadoEn: timestamp("actualizado_en").notNull().defaultNow(),
+});
+
+export type Customization = typeof customizations.$inferSelect;

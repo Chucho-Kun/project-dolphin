@@ -127,8 +127,51 @@
     }
   },
   "editor": {
-    "placeholderTitle": "Editor under construction",
-    "placeholderDesc": "Customization of {code} will be available very soon.",
-    "backToTemplate": "Back to the template"
+    "backToTemplate": "Back to the template",
+    "avisoSinSvgTitulo": "Design not available yet",
+    "avisoSinSvgDesc": "Template {code} does not have its design loaded yet. Check back soon.",
+    "avisoSinMedidasTitulo": "Design under review",
+    "avisoSinMedidasDesc": "The design for {code} does not declare its print size. We are reviewing it.",
+    "avisoSinZonasTitulo": "Design under review",
+    "avisoSinZonasDesc": "The design for {code} has no marked editable zones. We are reviewing it.",
+    "avisoNoDisponibleTitulo": "Design unavailable for now",
+    "avisoNoDisponibleDesc": "We could not load the design for {code}. Try again later.",
+    "enlaceInvalido": "That reopen link is not valid; you are starting fresh.",
+    "panelImagen": {
+      "titulo": "Photo {zona}",
+      "cargar": "Upload photo",
+      "arrastrar": "Drag to position the photo inside its zone",
+      "acercar": "Zoom in",
+      "alejar": "Zoom out",
+      "restablecer": "Reset",
+      "vacia": "No photo yet. Upload one from your device.",
+      "ayuda": "Zoom from {min} to {max} times. The photo always stays inside its zone.",
+      "errorTipo": "That file does not work: use JPG, PNG or WebP.",
+      "errorTamano": "The photo is over 10 MB: use a lighter one."
+    },
+    "panelTexto": {
+      "titulo": "Text: {clave}",
+      "contenido": "Content",
+      "tamano": "Size",
+      "color": "Color",
+      "fuente": "Font",
+      "vistaPrevia": "Text preview",
+      "vacio": "Type your text…",
+      "truncado": "The text was shortened with … at the minimum size.",
+      "ayuda": "On overflow it shrinks down to {piso} % and then shortens."
+    },
+    "shell": {
+      "acciones": "Save and download",
+      "guardar": "Save",
+      "guardando": "Saving…",
+      "descargar": "Download PDF",
+      "descargando": "Generating PDF…",
+      "enlaceListo": "Your reopen link:",
+      "copiar": "Copy link",
+      "copiado": "Copied!",
+      "errorLimite": "You passed the 20 photos per day limit. Try tomorrow.",
+      "errorRed": "Could not save. Check your connection and try again.",
+      "errorPdf": "Could not generate the PDF on this device."
+    }
   }
 }

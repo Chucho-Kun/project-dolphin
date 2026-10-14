@@ -127,8 +127,51 @@
     }
   },
   "editor": {
-    "placeholderTitle": "Editor en construcción",
-    "placeholderDesc": "La personalización de {code} estará disponible muy pronto.",
-    "backToTemplate": "Volver a la plantilla"
+    "backToTemplate": "Volver a la plantilla",
+    "avisoSinSvgTitulo": "Diseño aún no disponible",
+    "avisoSinSvgDesc": "La plantilla {code} todavía no tiene su diseño cargado. Vuelve pronto.",
+    "avisoSinMedidasTitulo": "Diseño en revisión",
+    "avisoSinMedidasDesc": "El diseño de {code} no declara sus medidas de impresión. Lo estamos revisando.",
+    "avisoSinZonasTitulo": "Diseño en revisión",
+    "avisoSinZonasDesc": "El diseño de {code} no trae zonas editables marcadas. Lo estamos revisando.",
+    "avisoNoDisponibleTitulo": "Diseño no disponible por ahora",
+    "avisoNoDisponibleDesc": "No pudimos cargar el diseño de {code}. Intenta de nuevo más tarde.",
+    "enlaceInvalido": "Ese enlace de reapertura no vale; empiezas de cero.",
+    "panelImagen": {
+      "titulo": "Foto {zona}",
+      "cargar": "Cargar foto",
+      "arrastrar": "Arrastra para posicionar la foto dentro de su zona",
+      "acercar": "Acercar",
+      "alejar": "Alejar",
+      "restablecer": "Restablecer",
+      "vacia": "Sin foto todavía. Carga una desde tu dispositivo.",
+      "ayuda": "Zoom de {min} a {max} veces. La foto siempre queda dentro de su zona.",
+      "errorTipo": "Ese archivo no vale: usa JPG, PNG o WebP.",
+      "errorTamano": "La foto pasa de 10 MB: usa una más ligera."
+    },
+    "panelTexto": {
+      "titulo": "Texto: {clave}",
+      "contenido": "Contenido",
+      "tamano": "Tamaño",
+      "color": "Color",
+      "fuente": "Fuente",
+      "vistaPrevia": "Vista previa del texto",
+      "vacio": "Escribe tu texto…",
+      "truncado": "El texto se acortó con … al llegar al tamaño mínimo.",
+      "ayuda": "Si desborda, encoge solo hasta el {piso} % y luego se acorta."
+    },
+    "shell": {
+      "acciones": "Guardar y descargar",
+      "guardar": "Guardar",
+      "guardando": "Guardando…",
+      "descargar": "Descargar PDF",
+      "descargando": "Generando PDF…",
+      "enlaceListo": "Tu enlace de reapertura:",
+      "copiar": "Copiar enlace",
+      "copiado": "¡Copiado!",
+      "errorLimite": "Pasaste el límite de 20 fotos por día. Intenta mañana.",
+      "errorRed": "No se pudo guardar. Revisa tu conexión e intenta de nuevo.",
+      "errorPdf": "No se pudo generar el PDF en este dispositivo."
+    }
   }
 }

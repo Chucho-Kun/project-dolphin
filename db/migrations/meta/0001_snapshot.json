@@ -1,0 +1,304 @@
+{
+  "id": "a592f849-629e-4822-8e46-a5197490fc7a",
+  "prevId": "c909185a-b60a-452d-8e79-6171ad8e487c",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.categories": {
+      "name": "categories",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "serial",
+          "primaryKey": true,
+          "notNull": true
+        },
+        "slug_es": {
+          "name": "slug_es",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug_en": {
+          "name": "slug_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre_es": {
+          "name": "nombre_es",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "nombre_en": {
+          "name": "nombre_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "categories_slug_es_unique": {
+          "name": "categories_slug_es_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug_es"
+          ]
+        },
+        "categories_slug_en_unique": {
+          "name": "categories_slug_en_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug_en"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.customizations": {
+      "name": "customizations",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "product_code": {
+          "name": "product_code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "token_secreto": {
+          "name": "token_secreto",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "imagenes": {
+          "name": "imagenes",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "ajustes": {
+          "name": "ajustes",
+          "type": "json",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "creado_en": {
+          "name": "creado_en",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        },
+        "actualizado_en": {
+          "name": "actualizado_en",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "default": "now()"
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "customizations_product_code_products_code_fk": {
+          "name": "customizations_product_code_products_code_fk",
+          "tableFrom": "customizations",
+          "tableTo": "products",
+          "columnsFrom": [
+            "product_code"
+          ],
+          "columnsTo": [
+            "code"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "customizations_token_secreto_unique": {
+          "name": "customizations_token_secreto_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "token_secreto"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.products": {
+      "name": "products",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "code": {
+          "name": "code",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "category_id": {
+          "name": "category_id",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug_es": {
+          "name": "slug_es",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "slug_en": {
+          "name": "slug_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo_es": {
+          "name": "titulo_es",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "titulo_en": {
+          "name": "titulo_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descripcion_es": {
+          "name": "descripcion_es",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "descripcion_en": {
+          "name": "descripcion_en",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "foto_cerrada_key": {
+          "name": "foto_cerrada_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "foto_abierta_key": {
+          "name": "foto_abierta_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "plantilla_svg_key": {
+          "name": "plantilla_svg_key",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "dificultad": {
+          "name": "dificultad",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "tiempo_min": {
+          "name": "tiempo_min",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "materiales": {
+          "name": "materiales",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "es_gratis": {
+          "name": "es_gratis",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "default": true
+        }
+      },
+      "indexes": {},
+      "foreignKeys": {
+        "products_category_id_categories_id_fk": {
+          "name": "products_category_id_categories_id_fk",
+          "tableFrom": "products",
+          "tableTo": "categories",
+          "columnsFrom": [
+            "category_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "no action",
+          "onUpdate": "no action"
+        }
+      },
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {
+        "products_code_unique": {
+          "name": "products_code_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "code"
+          ]
+        },
+        "products_slug_es_unique": {
+          "name": "products_slug_es_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug_es"
+          ]
+        },
+        "products_slug_en_unique": {
+          "name": "products_slug_en_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "slug_en"
+          ]
+        }
+      },
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
