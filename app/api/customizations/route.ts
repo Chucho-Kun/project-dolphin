@@ -22,6 +22,8 @@ const R2KEY_RE = /^[A-Za-z0-9][A-Za-z0-9/_.-]{0,400}\.(jpg|jpeg|png|webp)$/i;
 const COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 // Lista fija Google OFL inicial (SPEC 02). Se amplía en otro spec.
 const FUENTES = ["Roboto"] as const;
+// Alineaciones del SPEC 2.1 (opcionales: los ?t= viejos no las traen).
+const ALINEACIONES = ["izquierda", "centro", "derecha"] as const;
 
 function esNumero(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
@@ -64,12 +66,28 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
       tamano?: unknown;
       color?: unknown;
       fuente?: unknown;
+      alineacion?: unknown;
+      x?: unknown;
+      y?: unknown;
     };
     if (!TEXTO_RE.test(String(r.id ?? ""))) return false;
     if (typeof r.contenido !== "string" || r.contenido.length > 500) return false;
-    if (!esNumero(r.tamano) || r.tamano < 1 || r.tamano > 500) return false;
+    // SPEC 2.1: el techo UX (250 % del default) lo aplica el cliente; el
+    // servidor solo acota abuso (antes 500, insuficiente para el 250 %).
+    if (!esNumero(r.tamano) || r.tamano < 1 || r.tamano > 2000) return false;
     if (!COLOR_RE.test(String(r.color ?? ""))) return false;
     if (!(FUENTES as readonly string[]).includes(String(r.fuente ?? ""))) return false;
+    // SPEC 2.1: alineación + desplazamiento opcionales (los ?t= viejos no
+    // los traen); si vienen, con forma válida (cota ±10000 como imágenes).
+    if (
+      r.alineacion !== undefined &&
+      !(ALINEACIONES as readonly string[]).includes(String(r.alineacion))
+    ) {
+      return false;
+    }
+    for (const c of [r.x, r.y]) {
+      if (c !== undefined && (!esNumero(c) || Math.abs(c) > 10000)) return false;
+    }
     return true;
   });
   return textosOk;

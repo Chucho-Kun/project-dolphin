@@ -127,6 +127,7 @@ export default async function EditorPage({
         </p>
       ) : null}
       <EditorShell
+        key={code}
         productCode={product.code}
         locale={locale}
         svgText={plantilla.svg}

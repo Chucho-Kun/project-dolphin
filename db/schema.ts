@@ -69,6 +69,12 @@ export type CustomizationAjusteTexto = {
   tamano: number;
   color: string;
   fuente: string;
+  // SPEC 2.1: alineación + desplazamiento. Opcionales en lectura para que
+  // los diseños guardados antes del spec abran sin error (defaults en
+  // lib/texto.ts; la alineación ausente la resuelve el canvas desde el SVG).
+  alineacion?: "izquierda" | "centro" | "derecha";
+  x?: number;
+  y?: number;
 };
 
 export type CustomizationAjustes = {

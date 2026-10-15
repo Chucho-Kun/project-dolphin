@@ -92,6 +92,10 @@ export type Reapertura = {
     tamano: number;
     color: string;
     fuente: string;
+    // SPEC 2.1: opcionales (los ?t= viejos no los traen; van tal cual).
+    alineacion?: "izquierda" | "centro" | "derecha";
+    x?: number;
+    y?: number;
   }[];
 } | null;
 

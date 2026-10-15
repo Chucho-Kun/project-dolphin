@@ -15,7 +15,10 @@ import {
   type AjusteImagen,
 } from "@/lib/encuadre";
 import {
+  normalizarPosicionTexto,
+  PISO_AUTO_SHRINK,
   resolverTexto,
+  TECHO_ESCALA_TEXTO,
   type AjusteTexto,
   type ReferenciaTexto,
 } from "@/lib/texto";
@@ -41,6 +44,9 @@ export type TextoInicial = {
   tamano: number;
   color: string;
   fuente: string;
+  // SPEC 2.1: opcionales (los ?t= viejos no los traen).
+  x?: number;
+  y?: number;
 };
 
 type Props = {
@@ -123,6 +129,9 @@ export default function EditorShell({
         tamano: tx.tamano,
         color: tx.color,
         fuente: tx.fuente,
+        // SPEC 2.1: restaura posición si el ?t= la trae.
+        ...(typeof tx.x === "number" && Number.isFinite(tx.x) ? { x: tx.x } : {}),
+        ...(typeof tx.y === "number" && Number.isFinite(tx.y) ? { y: tx.y } : {}),
       };
     }
     return base;
@@ -131,6 +140,8 @@ export default function EditorShell({
   const [zonaSeleccionada, setZonaSeleccionada] = useState<string | null>(
     zonas[0] ?? null,
   );
+  // SPEC 2.1 paso 3: texto seleccionado en el canvas (contorno + gestos).
+  const [textoSeleccionado, setTextoSeleccionado] = useState<string | null>(null);
   const [naturales, setNaturales] = useState<Record<string, { w: number; h: number }>>({});
   const [token, setToken] = useState<string | null>(tokenInicial);
   const [guardando, setGuardando] = useState(false);
@@ -217,18 +228,39 @@ export default function EditorShell({
     () =>
       textosIds.map((id) => {
         const base = textoBase(id);
-        const r = resolverTexto(base, referencias[id] ?? null);
+        const ref = referencias[id] ?? null;
+        const r = resolverTexto(base, ref);
+        const pos = normalizarPosicionTexto(base);
+        const tamDefault = ref?.tamanoDefault ?? null;
         return {
           id,
           contenido: r.mostrado,
           tamano: r.tamanoEfectivo,
           color: base.color,
           fuente: base.fuente,
+          x: pos.x,
+          y: pos.y,
+          // SPEC 2.1 paso 4: base + rango de la manija.
+          tamanoBase: base.tamano,
+          minTamano:
+            tamDefault != null && tamDefault > 0
+              ? Math.round(PISO_AUTO_SHRINK * tamDefault)
+              : undefined,
+          maxTamano:
+            tamDefault != null && tamDefault > 0
+              ? Math.round(TECHO_ESCALA_TEXTO * tamDefault)
+              : undefined,
         };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [firmaTextos, textos, referencias, defectos],
   );
+
+  /** Cambio de un texto desde su panel (SPEC 2.1). */
+  function cambiarTexto(id: string, parcial: Partial<AjusteTexto>) {
+    const final: AjusteTexto = { ...textoBase(id), ...parcial };
+    setTextos((prev) => ({ ...prev, [id]: final }));
+  }
 
   function cambiarAjuste(zonaId: string, ajuste: AjusteImagen) {
     setFotos((prev) => {
@@ -263,6 +295,19 @@ export default function EditorShell({
     cambiarAjuste(zonaId, { ...f.ajuste, x: f.ajuste.x + dx, y: f.ajuste.y + dy });
   }
 
+  /** SPEC 2.1 paso 3: el canvas ya recortó el delta a la caja del grupo. */
+  function alArrastrarTexto(id: string, dx: number, dy: number) {
+    setTextoSeleccionado(id);
+    // Base del render actual; el updater acumula aunque React no haya
+    // pintado entre gestos (prev gana si ya existe).
+    const base = textoBase(id);
+    setTextos((prev) => {
+      const actual = prev[id] ?? base;
+      const pos = normalizarPosicionTexto(actual);
+      return { ...prev, [id]: { ...actual, x: pos.x + dx, y: pos.y + dy } };
+    });
+  }
+
   function alArchivo(zonaId: string, file: File) {
     setZonaSeleccionada(zonaId);
     const anterior = fotos[zonaId];
@@ -288,6 +333,31 @@ export default function EditorShell({
         setNaturales((prev) => ({ ...prev, [zonaId]: tam }));
       }
     });
+  }
+
+  /** SPEC 2.1 paso 5: vuelve a x=0, y=0 y base del SVG. */
+  function restablecerTexto(id: string) {
+    const d = defectos?.textos[id];
+    setTextos((prev) => {
+      const actual = prev[id];
+      if (!actual) return prev;
+      const siguiente: AjusteTexto = { ...actual };
+      delete siguiente.x;
+      delete siguiente.y;
+      if (d && d.tamano > 0) siguiente.tamano = d.tamano;
+      return { ...prev, [id]: siguiente };
+    });
+  }
+
+  /** SPEC 2.1 paso 4: el canvas ya recortó la base al rango enviado. */
+  function alEscalarTexto(id: string, tamano: number) {
+    if (!Number.isFinite(tamano)) return;
+    const tamDefault = referencias[id]?.tamanoDefault ?? null;
+    const techo =
+      tamDefault != null && tamDefault > 0
+        ? TECHO_ESCALA_TEXTO * tamDefault
+        : tamano;
+    cambiarTexto(id, { tamano: Math.min(techo, Math.max(1, tamano)) });
   }
 
   async function guardar() {
@@ -417,6 +487,10 @@ export default function EditorShell({
           zonaSeleccionada={zonaSeleccionada}
           onSeleccionarZona={setZonaSeleccionada}
           onArrastrarZona={alArrastrarZona}
+          textoSeleccionado={textoSeleccionado}
+          onSeleccionarTexto={setTextoSeleccionado}
+          onArrastrarTexto={alArrastrarTexto}
+          onEscalarTexto={alEscalarTexto}
           onDefectos={setDefectos}
           svgRef={svgRef}
         />
@@ -446,7 +520,8 @@ export default function EditorShell({
             textoId={tid}
             ajuste={textoBase(tid)}
             referencia={referencias[tid] ?? null}
-            onCambio={(id, a) => setTextos((prev) => ({ ...prev, [id]: a }))}
+            onCambio={cambiarTexto}
+            onRestablecer={restablecerTexto}
           />
         ))}
 

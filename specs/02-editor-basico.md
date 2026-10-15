@@ -1,6 +1,6 @@
 # SPEC 02 — Editor básico con zonas SVG y descarga PDF
 
-> **Estado:** Approved
+> **Estado:** Implemented
 > **Depende de:** SPEC 01, SPEC 1.2, SPEC 1.3
 > **Fecha:** 2026-10-13
 > **Objetivo:** El invitado personaliza una plantilla desde `/editor/[code]` moviendo su foto dentro de las zonas del SVG y editando sus textos, guarda con link de reapertura y descarga el PDF terminado.

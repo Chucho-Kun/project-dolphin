@@ -6,6 +6,7 @@ import {
   FUENTES_EDITOR,
   PISO_AUTO_SHRINK,
   resolverTexto,
+  TECHO_ESCALA_TEXTO,
   type AjusteTexto,
   type ReferenciaTexto,
 } from "@/lib/texto";
@@ -23,9 +24,11 @@ type Props = {
   /** Default + slot medidos en el SVG vivo (el shell los provee). */
   referencia: ReferenciaTexto | null;
   onCambio: (id: string, ajuste: AjusteTexto) => void;
+  /** SPEC 2.1 paso 5: restablece posición, alineación y base del SVG. */
+  onRestablecer: (id: string) => void;
 };
 
-export default function PanelTexto({ textoId, ajuste, referencia, onCambio }: Props) {
+export default function PanelTexto({ textoId, ajuste, referencia, onCambio, onRestablecer }: Props) {
   const t = useTranslations("editor");
   const clave = textoId.replace("texto-editable-", "");
   const etiqueta = t("panelTexto.titulo", { clave });
@@ -37,7 +40,9 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio }: Pr
 
   const tamanoDefault = referencia?.tamanoDefault ?? null;
   const piso = tamanoDefault != null ? Math.round(PISO_AUTO_SHRINK * tamanoDefault) : 8;
-  const techo = tamanoDefault ?? 72;
+  // SPEC 2.1 paso 4: el slider comparte la base con la manija (techo 250 %).
+  const techo =
+    tamanoDefault != null ? Math.round(TECHO_ESCALA_TEXTO * tamanoDefault) : 72;
   const porcentaje =
     tamanoDefault != null && tamanoDefault > 0
       ? Math.round((resuelto.tamanoEfectivo / tamanoDefault) * 100)
@@ -46,7 +51,10 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio }: Pr
   function cambiar(parcial: Partial<AjusteTexto>) {
     const siguiente = { ...ajuste, ...parcial };
     if (tamanoDefault != null) {
-      siguiente.tamano = Math.min(tamanoDefault, Math.max(1, siguiente.tamano));
+      siguiente.tamano = Math.min(
+        TECHO_ESCALA_TEXTO * tamanoDefault,
+        Math.max(1, siguiente.tamano),
+      );
     }
     onCambio(textoId, siguiente);
   }
@@ -135,6 +143,14 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio }: Pr
           {t("panelTexto.ayuda", { piso: Math.round(PISO_AUTO_SHRINK * 100) })}
         </p>
       )}
+
+      <button
+        type="button"
+        onClick={() => onRestablecer(textoId)}
+        className="mt-2 rounded border border-neutral-300 bg-white px-3 py-1.5 text-sm hover:bg-neutral-50"
+      >
+        {t("panelTexto.restablecer")}
+      </button>
     </section>
   );
 }

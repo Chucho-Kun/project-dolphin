@@ -158,7 +158,8 @@
       "vistaPrevia": "Text preview",
       "vacio": "Type your text…",
       "truncado": "The text was shortened with … at the minimum size.",
-      "ayuda": "On overflow it shrinks down to {piso} % and then shortens."
+      "ayuda": "On overflow it shrinks down to {piso} % and then shortens.",
+      "restablecer": "Reset position and size"
     },
     "shell": {
       "acciones": "Save and download",

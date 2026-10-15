@@ -82,6 +82,12 @@ function cargarImagen(src: string, w: number, h: number): Promise<HTMLImageEleme
  * Rasteriza un SVG ya editado a JPEG a 300 DPI del tamaño declarado.
  * Debe llamarse en cliente. Lanza Error("raster-fallo") si el canvas se
  * contamina (CORS) o la imagen no carga: la UI lo muestra visible.
+ *
+ * SPEC 2.1 paso 7: la alineación (text-anchor), la posición (translate) y
+ * la escala (font-size) de los textos se reflejan solas porque el canvas
+ * las aplica como atributos del SVG vivo y aquí se serializa ese nodo.
+ * Todo overlay de UI (contornos, manijas) debe llevar `data-ui` para que
+ * salga del PDF (se elimina abajo).
  */
 export async function rasterizarSvgAJpeg(
   svg: SVGSVGElement,

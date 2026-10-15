@@ -1,29 +1,27 @@
 # AGENTS.md — Project Dolphin
 
-Tienda de plantillas papercraft (pop-up cards). Next.js 16 App Router + TS + Tailwind v4 + `next-intl` (`/es` default, `/en`) + Drizzle + Postgres (Railway) + R2.
+Tienda de plantillas papercraft (pop-up cards). Next.js 16 App Router + TS + Tailwind v4 + `next-intl` (`/es` default, `/en`) + Drizzle + Postgres (Railway) + R2. Sin tests, sin CI, sin `opencode.json`.
 
-## Qué spec sigue
+## Specs (fuente de verdad)
 
-Fuente de verdad: `specs/` (la serie manda; `brainstorm/` y `docs/superpowers/` son insumo, no norma).
-
-- `01-fundacion-catalogo-bilingue.md` — **Implemented** (scaffold, i18n, `categories`+`products`, SEO, seed, deploy).
-- `1.1-diseno-visual-estilo-ferredip.md` — **Obsoleto** (sustituido por 1.2).
-- `1.2-home-estilo-etsy-3djoy.md` — **Implemented** (home estilo Etsy/3DJoy, header/hero/sidebar/footer).
-- `1.3-diseno-secciones-producto.md` — **Implemented** (página producto en 3 secciones + foto CDN de prueba). Rama activa: `spec-1.3-diseno-secciones-producto`.
-- **Siguiente: SPEC 02 editor básico** — no tiene archivo aún; hay que redactarlo desde `brainstorm/editor/funcionalidad-editor-basico.md` (base A4-safe, auto-shrink de texto, imagen mover+zoom en zona fija, `code` canónico). Después SPEC 03 (cuentas, descarga, email). Pagos/checkout están fuera del MVP gratis (SPEC 01 §"Lo que no está").
+`specs/` manda; `brainstorm/` y `docs/` son insumo. Estados: `01` Implemented · `1.1` Obsoleto (sustituido por 1.2) · `1.2` Implemented · `1.3` Implemented · `02-editor-basico` Implemented. Siguiente: SPEC 03 (cuentas, historial, email) — aún sin archivo. Pagos/checkout fuera del MVP gratis.
 
 ## Comandos
 
-- `npm run dev` / `npm run build` / `npm run start` / `npm run lint`
-- `npm run db:generate` / `npm run db:migrate` / `npm run db:push` / `npm run db:studio` / `npm run db:seed` (seed idempotente por `code`; correr 2x no duplica)
-- Deploy Railway Nixpacks: arranque `npm run db:migrate && npm run start`, healthcheck `/api/health` (ver `railway.json`).
-- Specs con solo diseño se verifican con `npm run build` + `npm run lint` en verde + capturas 360/768/1280 comprobando `document.documentElement.scrollWidth <= window.innerWidth` (Playwright MCP si está disponible, si no manual).
+- `npm run dev` / `npm run build` / `npm run start` / `npm run lint` (sin typecheck ni tests separados).
+- `npm run db:generate` / `npm run db:migrate` / `npm run db:push` / `npm run db:studio` / `npm run db:seed` (seed idempotente por `code`; verificar corriendo 2x sin duplicar).
+- Deploy Railway Nixpacks: arranque `npm run db:migrate && npm run start`, healthcheck `/api/health` (`railway.json`).
+- Verificación diseño/editor: `npm run build` + `npm run lint` en verde + capturas 360/768/1280 con `document.documentElement.scrollWidth <= window.innerWidth`.
 
-## Convenciones que un agente rompería sin ayuda
+## Arquitectura que hay que saber
 
-- i18n: el middleware vive en `proxy.ts` (convención Next 16, no `middleware.ts`). Routing `es` default en `i18n/routing.ts`. **Todo string visible solo en `messages/es.json` + `messages/en.json`**, nunca hardcodeado; claves nuevas por spec (`home.*`, `layout.*`, `product.*`).
-- Rutas: segmento único `templates` con slugs traducidos (`slug_es`/`slug_en`, unicidad por columna). La resolución prueba ambas columnas; ES y EN resuelven al mismo `code`. `code` (`AAA-000`) es inmutable y nunca va en URLs. Catálogo en render dinámico (`force-dynamic`), con estado vacío si la DB está vacía — nunca error.
-- DB: solo existen `categories` y `products` (`db/schema.ts`). Foto R2 (`foto_cerrada_key`/`foto_abierta_key`) nulleable. **Los specs de diseño prohíben migraciones, cambios en `db/`/`lib/db.ts`, rutas API y dependencias nuevas** — el diff debe limitarse a componentes, `app/`, `messages/` y `globals.css`.
-- Provisionales marcados (reemplazo en otro spec, no "arreglar" aquí): `FOTO_PRUEBA_CDN` (`https://cdn.ferredip.com.mx/fotos/product-example.webp`, fallback local obligatorio `/images/product-example.webp`, sin `next/image` remoto); `PRECIOS_PROVISIONALES` hardcodeados (verde + tachado + 25 %); conteos del sidebar hardcodeados (decorativos); reseñas de muestra con etiqueta visible + `data-muestra="true"` y **sin `AggregateRating` en JSON-LD**; JSON-LD sin `image` de prueba; footer y botones pendientes con links a `#` o `aria-disabled` (nunca navegar ni error).
-- No copiar identidad de terceros: `grep -ri etsy` debe dar vacío en el diff; vendedor/textos siempre Dolphin.
-- `app/[locale]/editor/[code]` existe como placeholder; `Editar diseño` enlaza ahí por `code` real.
+- i18n: middleware en `proxy.ts` (convención Next 16, no `middleware.ts`); routing en `i18n/routing.ts` (`es` default). **Todo string visible en `messages/es.json` + `messages/en.json`**, nunca hardcodeado (`home.*`, `layout.*`, `product.*`, `editor.*`).
+- Catálogo: ruta única `templates` con `slug_es`/`slug_en` (unicidad por columna); se resuelven ambas columnas al mismo `code` (`AAA-000`, inmutable, nunca en URLs salvo editor). Render dinámico (`force-dynamic`); DB vacía = estado vacío, nunca error.
+- DB (`db/schema.ts`): `categories` + `products` (+ `plantilla_svg_key` nulleable: key R2 del SVG base) + `customizations` (`product_code` → `products.code`, `tokenSecreto` UUIDv4 único, `imagenes`/`ajustes` JSON, last-write-wins; PDF no se almacena).
+- Editor (`app/[locale]/editor/[code]`, identidad = `code`; reapertura `?t=[token]` sin caducidad): SVG inline sanitizado (sin `<script>` ni `on*`), render 1:1 sin reescalado. Contrato SVG: `width`/`height` en **mm obligatorios** (+ `viewBox` 1:1), `id="zona-editable-N"` (rect marcador oculto, geometría vía `getBBox()`, imagen recortada con `<clipPath>`, nunca sale de la zona), `<g id="texto-editable-<clave>">` (clave semántica), guías/márgenes A4-safe incluidos en el archivo. Sin SVG o sin mm → aviso, no error. Texto auto-shrink [60 %,100 %] del default, luego elipsis indicada; fuentes solo lista fija OFL (inicial `Roboto`).
+- APIs: `app/api/uploads` (imagen JPG/PNG/WebP ≤10 MB cliente+servidor → R2, rate-limit best-effort en memoria 20/día/IP), `app/api/customizations` (POST/PUT/GET por token), `app/api/r2/[...key]`. PDF 100 % cliente con `jsPDF` (provisional, reversible a servidor): raster 300 DPI → página = medidas declaradas ±1 mm; funciona sin guardar; impresión física al 100 % verificada con regla.
+- Env: `DATABASE_URL`, `R2_ACCOUNT_ID/_ACCESS_KEY_ID/_SECRET_ACCESS_KEY/_BUCKET`, `NEXT_PUBLIC_CDN_URL`, `NEXT_PUBLIC_SITE_URL` (ver `.env.example`; `lib/env.ts` exige las requeridas). Piloto: `public/editor/FIG-001-A-BETA/diseno-piloto.svg`.
+
+## Provisionales (no "arreglar"; se reemplazan en otro spec)
+
+Marcadores `FOTO_PRUEBA_CDN` (CDN + fallback local `/images/product-example.webp`, sin `next/image` remoto), `PRECIOS_PROVISIONALES`, conteos sidebar decorativos, reseñas muestra con etiqueta + `data-muestra="true"` y **sin `AggregateRating` en JSON-LD**, JSON-LD sin `image` de prueba, footer/botones pendientes con `#` o `aria-disabled`. No copiar identidad de terceros: `grep -ri etsy` debe dar vacío en el diff.

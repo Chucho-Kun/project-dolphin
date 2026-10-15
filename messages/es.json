@@ -158,7 +158,8 @@
       "vistaPrevia": "Vista previa del texto",
       "vacio": "Escribe tu texto…",
       "truncado": "El texto se acortó con … al llegar al tamaño mínimo.",
-      "ayuda": "Si desborda, encoge solo hasta el {piso} % y luego se acorta."
+      "ayuda": "Si desborda, encoge solo hasta el {piso} % y luego se acorta.",
+      "restablecer": "Restablecer posición y tamaño"
     },
     "shell": {
       "acciones": "Guardar y descargar",
