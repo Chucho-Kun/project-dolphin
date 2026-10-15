@@ -61,6 +61,8 @@ type Props = {
   onArrastrarTexto?: (id: string, dxSvg: number, dySvg: number) => void;
   /** SPEC 2.1 paso 4: manija de escala (tamaño base absoluto). */
   onEscalarTexto?: (id: string, tamanoBase: number) => void;
+  /** SPEC 2.3 paso 2-3: archivo externo soltado sobre una zona. */
+  onArchivoExterno?: (zonaId: string, file: File) => void;
 };
 
 export type CajaZona = { x: number; y: number; w: number; h: number };
@@ -302,9 +304,14 @@ export default function PlantillaSvg({
   onDeseleccionar,
   onArrastrarTexto,
   onEscalarTexto,
+  onArchivoExterno,
 }: Props) {
   const envolturaRef = useRef<HTMLDivElement>(null);
-  const [naturales, setNaturales] = useState<Record<string, { w: number; h: number }>>({});
+  // SPEC 2.3 paso 4: caché por src (tras quitar y cargar otra foto distinta
+  // el encuadre parte centrado; sin el src reutilizaría el tamaño anterior).
+  const [naturales, setNaturales] = useState<
+    Record<string, { w: number; h: number; src: string }>
+  >({});
   const defectosEnviados = useRef(false);
   const defectosCb = useRef(onDefectos);
   const arrastrarCb = useRef(onArrastrarZona);
@@ -313,6 +320,10 @@ export default function PlantillaSvg({
   const deseleccionarCb = useRef(onDeseleccionar);
   const arrastrarTextoCb = useRef(onArrastrarTexto);
   const escalarTextoCb = useRef(onEscalarTexto);
+  const archivoExternoCb = useRef(onArchivoExterno);
+  // SPEC 2.3 paso 2-3: zonas con caja medible (sin caja no hay overlay
+  // ni drop fiable; el botón Cargar sigue disponible).
+  const cajasValidas = useRef(new Set<string>());
   useEffect(() => {
     defectosCb.current = onDefectos;
     arrastrarCb.current = onArrastrarZona;
@@ -321,6 +332,7 @@ export default function PlantillaSvg({
     deseleccionarCb.current = onDeseleccionar;
     arrastrarTextoCb.current = onArrastrarTexto;
     escalarTextoCb.current = onEscalarTexto;
+    archivoExternoCb.current = onArchivoExterno;
   });
   // SPEC 2.1 paso 3: caja fija del grupo + ancla + transform del autor
   // (referencia del arrastre; se mide una vez, antes de aplicar ajustes).
@@ -337,14 +349,18 @@ export default function PlantillaSvg({
   useEffect(() => {
     let vivo = true;
     for (const img of imagenes) {
-      if (!img.src || naturales[img.zonaId]) continue;
+      const cached = naturales[img.zonaId];
+      if (!img.src || (cached && cached.src === img.src)) continue;
+      const srcActual = img.src;
       const sonda = new Image();
       sonda.onload = () => {
         if (!vivo) return;
         const w = sonda.naturalWidth || 1;
         const h = sonda.naturalHeight || 1;
         setNaturales((prev) =>
-          prev[img.zonaId] ? prev : { ...prev, [img.zonaId]: { w, h } },
+          prev[img.zonaId]?.src === srcActual
+            ? prev
+            : { ...prev, [img.zonaId]: { w, h, src: srcActual } },
         );
       };
       sonda.onerror = () => {};
@@ -460,6 +476,7 @@ export default function PlantillaSvg({
         const clipId = `clip-${id}`;
         defs.querySelector(`#${CSS.escape(clipId)}`)?.remove();
         if (caja && caja.w > 0 && caja.h > 0) {
+          cajasValidas.current.add(id);
           const clip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
           clip.setAttribute("id", clipId);
           const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
@@ -506,6 +523,28 @@ export default function PlantillaSvg({
             g.appendChild(foto);
           }
 
+          // SPEC 2.3 paso 1: overlay de zona vacía (UI: excluido del PDF
+          // vía data-ui). Solo si no hay foto; mismo clip-path de la zona
+          // (en zonas futuras no rectangulares el rojo nunca se sale de la
+          // forma, igual que la foto) y sin interceptar eventos.
+          if (!ajuste?.src) {
+            const vacia = document.createElementNS(
+              "http://www.w3.org/2000/svg",
+              "rect",
+            );
+            vacia.setAttribute("data-ui", "zona-vacia");
+            vacia.setAttribute("x", String(caja.x));
+            vacia.setAttribute("y", String(caja.y));
+            vacia.setAttribute("width", String(caja.w));
+            vacia.setAttribute("height", String(caja.h));
+            vacia.setAttribute("fill", COLOR_SELECCION);
+            vacia.setAttribute("fill-opacity", "0.1");
+            vacia.setAttribute("stroke", "none");
+            vacia.setAttribute("clip-path", `url(#${clipId})`);
+            vacia.style.pointerEvents = "none";
+            g.appendChild(vacia);
+          }
+
           // Contorno de selección propio (UI: excluido del PDF vía data-ui).
           // Clicable (pointer-events all con fill none): las caras vacías
           // no tienen qué pulsar (marcador oculto), así el contorno recibe
@@ -523,6 +562,8 @@ export default function PlantillaSvg({
           sel.setAttribute("stroke-dasharray", zonaSeleccionada === id ? "none" : "8 6");
           sel.style.pointerEvents = "all";
           g.appendChild(sel);
+        } else {
+          cajasValidas.current.delete(id);
         }
       } else if (id.startsWith("texto-editable-")) {
         const nodoTexto = g.querySelector("text");
@@ -894,8 +935,54 @@ export default function PlantillaSvg({
     };
   }, [svgText, imagenes, textos, zonaSeleccionada, textoSeleccionado, naturales, svgRef]);
 
+  // SPEC 2.3 paso 2: solo archivos externos; drags internos (mover foto
+  // o texto del SPEC 2.1, texto seleccionado) no traen `Files` y se ignoran.
+  function traeArchivos(e: React.DragEvent): boolean {
+    try {
+      return Array.from(e.dataTransfer.types ?? []).includes("Files");
+    } catch {
+      return false;
+    }
+  }
+
+  // Zona bajo el punto de suelta: grupo más cercano o zona ancestro si cae
+  // sobre un texto anidado (misma lógica `zonaAncestroDe` del SPEC 2.2).
+  function zonaBajoPunto(objetivo: EventTarget | null): string | null {
+    const el = objetivo instanceof Element ? objetivo.closest("g[id]") : null;
+    const zid = el?.getAttribute("id") ?? "";
+    if (ZONA_RE.test(zid)) return zid;
+    let n = objetivo instanceof Element ? objetivo.parentElement : null;
+    while (n) {
+      const id = n.getAttribute?.("id") ?? "";
+      if (ZONA_RE.test(id)) return id;
+      n = n.parentElement;
+    }
+    return null;
+  }
+
+  function alArrastrarSobre(e: React.DragEvent) {
+    if (!traeArchivos(e)) return;
+    // Solo permite el drop; no cambia ningún estilo (decisión del dueño).
+    e.preventDefault();
+  }
+
+  function alSoltar(e: React.DragEvent) {
+    if (!traeArchivos(e)) return;
+    e.preventDefault();
+    const zid = zonaBajoPunto(e.target);
+    if (!zid || !cajasValidas.current.has(zid)) return;
+    const file = e.dataTransfer.files?.[0];
+    if (!file) return;
+    archivoExternoCb.current?.(zid, file);
+  }
+
   return (
-    <div ref={envolturaRef} className="min-w-0">
+    <div
+      ref={envolturaRef}
+      className="min-w-0"
+      onDragOver={alArrastrarSobre}
+      onDrop={alSoltar}
+    >
       <div dangerouslySetInnerHTML={{ __html: svgText }} />
     </div>
   );

@@ -138,7 +138,7 @@
     "avisoNoDisponibleDesc": "We could not load the design for {code}. Try again later.",
     "enlaceInvalido": "That reopen link is not valid; you are starting fresh.",
     "panel": {
-      "hint": "Tap a zone or a text in the design to edit it.",
+      "hint": "Tap a zone or a text in the design to edit it. You can also drag a photo onto a red zone.",
       "cerrar": "Close panel"
     },
     "panelImagen": {
@@ -147,7 +147,7 @@
       "arrastrar": "Drag to position the photo inside its zone",
       "acercar": "Zoom in",
       "alejar": "Zoom out",
-      "restablecer": "Reset",
+      "restablecer": "Remove photo",
       "vacia": "You can add a photo from your device.",
       "ayuda": "Zoom from {min} to {max} times. The photo always stays inside its zone.",
       "errorTipo": "That file does not work: use JPG, PNG or WebP.",

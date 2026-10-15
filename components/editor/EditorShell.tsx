@@ -7,7 +7,7 @@ import PlantillaSvg, {
   type ImagenEnZona,
   type TextoEnPlantilla,
 } from "./PlantillaSvg";
-import PanelImagen from "./PanelImagen";
+import PanelImagen, { validarArchivoImagen } from "./PanelImagen";
 import PanelTexto from "./PanelTexto";
 import {
   AJUSTE_CENTRADO,
@@ -150,6 +150,13 @@ export default function EditorShell({
   const [descargando, setDescargando] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
+  // SPEC 2.3 paso 3: error del drop (el `error` interno de PanelImagen solo
+  // lo alimenta el <input>; sin prop el error del drop no tiene por dónde
+  // entrar). Se limpia al cargar válido, cambiar de selección o cerrar.
+  const [falloDrop, setFalloDrop] = useState<{
+    zonaId: string;
+    codigo: "tipo-no-valido" | "muy-grande";
+  } | null>(null);
 
   // Tamaños naturales de cada foto (para el clamp de cobertura).
   useEffect(() => {
@@ -317,6 +324,9 @@ export default function EditorShell({
 
   function alArchivo(zonaId: string, file: File) {
     setZonaSeleccionada(zonaId);
+    setTextoSeleccionado(null);
+    // SPEC 2.3 paso 3: cargar válido limpia el error del drop.
+    setFalloDrop(null);
     const anterior = fotos[zonaId];
     if (anterior?.src.startsWith("blob:")) {
       try {
@@ -340,6 +350,52 @@ export default function EditorShell({
         setNaturales((prev) => ({ ...prev, [zonaId]: tam }));
       }
     });
+  }
+
+  // SPEC 2.3 paso 3: drop externo. Misma vía que el botón: válido →
+  // `alArchivo` (reemplaza y resetea encuadre) + selecciona; inválido →
+  // fija `falloDrop` + selecciona. Solo el primer archivo (el canvas ya
+  // tomó `files[0]` e ignoró el resto).
+  function alArchivoExterno(zonaId: string, file: File) {
+    const fallo = validarArchivoImagen(file);
+    if (!fallo) {
+      alArchivo(zonaId, file);
+      return;
+    }
+    setZonaSeleccionada(zonaId);
+    setTextoSeleccionado(null);
+    setFalloDrop({ zonaId, codigo: fallo });
+  }
+
+  // SPEC 2.3 paso 4: quitar la foto (ex-Restablecer). Revoca el blob si lo
+  // hay, borra foto y natural (si no, una foto nueva reutilizaría el tamaño
+  // natural de la anterior), mantiene la zona seleccionada. Si la foto ya
+  // estaba guardada, su `r2Key` queda huérfana (se excluye del próximo
+  // Guardar; sin borrado en R2).
+  function alQuitarFoto(zonaId: string) {
+    const anterior = fotos[zonaId];
+    if (anterior?.src.startsWith("blob:")) {
+      try {
+        URL.revokeObjectURL(anterior.src);
+      } catch {
+        /* noop */
+      }
+    }
+    setFotos((prev) => {
+      if (!prev[zonaId]) return prev;
+      const siguiente = { ...prev };
+      delete siguiente[zonaId];
+      return siguiente;
+    });
+    setNaturales((prev) => {
+      if (!prev[zonaId]) return prev;
+      const siguiente = { ...prev };
+      delete siguiente[zonaId];
+      return siguiente;
+    });
+    setZonaSeleccionada(zonaId);
+    setTextoSeleccionado(null);
+    setFalloDrop((prev) => (prev?.zonaId === zonaId ? null : prev));
   }
 
   /** SPEC 2.1 paso 5: vuelve a x=0, y=0 y base del SVG. */
@@ -489,6 +545,8 @@ export default function EditorShell({
   function cerrarPanel() {
     setTextoSeleccionado(null);
     setZonaSeleccionada(null);
+    // SPEC 2.3 paso 3: cerrar limpia el error del drop.
+    setFalloDrop(null);
   }
   // SPEC 2.2 paso 4: al abrir el flotante el foco va al × (solo al abrir,
   // no al cambiar de área); Escape lo cierra y devuelve el foco al canvas.
@@ -581,16 +639,21 @@ export default function EditorShell({
             // SPEC 2.2: elegir un área sustituye el panel (exclusión mutua).
             setZonaSeleccionada(z);
             setTextoSeleccionado(null);
+            // SPEC 2.3 paso 3: cambiar de selección limpia el error del drop.
+            setFalloDrop(null);
           }}
           onArrastrarZona={alArrastrarZona}
           textoSeleccionado={textoSeleccionado}
           onSeleccionarTexto={(id) => {
             setTextoSeleccionado(id);
             if (id != null) setZonaSeleccionada(null);
+            // SPEC 2.3 paso 3: cambiar de selección limpia el error del drop.
+            setFalloDrop(null);
           }}
           onDeseleccionar={cerrarPanel}
           onArrastrarTexto={alArrastrarTexto}
           onEscalarTexto={alEscalarTexto}
+          onArchivoExterno={alArchivoExterno}
           onDefectos={setDefectos}
           svgRef={svgRef}
         />
@@ -644,6 +707,10 @@ export default function EditorShell({
               natural={naturales[zonaSeleccionada] ?? null}
               onCambio={cambiarAjuste}
               onArchivo={alArchivo}
+              falloDrop={
+                falloDrop?.zonaId === zonaSeleccionada ? falloDrop.codigo : null
+              }
+              onQuitar={alQuitarFoto}
             />
           ) : null}
         </div>

@@ -138,7 +138,7 @@
     "avisoNoDisponibleDesc": "No pudimos cargar el diseño de {code}. Intenta de nuevo más tarde.",
     "enlaceInvalido": "Ese enlace de reapertura no vale; empiezas de cero.",
     "panel": {
-      "hint": "Toca una zona o un texto del diseño para editarlo.",
+      "hint": "Toca una zona o un texto del diseño para editarlo. También puedes arrastrar una foto sobre una zona roja.",
       "cerrar": "Cerrar panel"
     },
     "panelImagen": {
@@ -147,7 +147,7 @@
       "arrastrar": "Arrastra para posicionar la foto dentro de su zona",
       "acercar": "Acercar",
       "alejar": "Alejar",
-      "restablecer": "Restablecer",
+      "restablecer": "Quitar foto",
       "vacia": "Puedes agregar una foto en esta sección",
       "ayuda": "Zoom de {min} a {max} veces. La foto siempre queda dentro de su zona.",
       "errorTipo": "Ese archivo no vale: usa JPG, PNG o WebP.",

@@ -3,7 +3,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
-  AJUSTE_CENTRADO,
   ZOOM_MAX,
   ZOOM_MIN,
   limitarAjuste,
@@ -50,6 +49,12 @@ type Props = {
   onCambio: (zonaId: string, ajuste: AjusteImagen) => void;
   /** El shell crea el objectURL y guarda el blob para el Guardar. */
   onArchivo: (zonaId: string, file: File) => void;
+  /** SPEC 2.3 paso 3: error del drop externo (el `error` interno solo lo
+      alimenta el <input>; sin prop el error del drop no tiene por dónde
+      entrar). */
+  falloDrop?: "tipo-no-valido" | "muy-grande" | null;
+  /** SPEC 2.3 paso 4: quitar la foto (ex-Restablecer; vacía la zona). */
+  onQuitar?: (zonaId: string) => void;
 };
 
 const PASO_ZOOM = 0.2;
@@ -62,6 +67,8 @@ export default function PanelImagen({
   natural,
   onCambio,
   onArchivo,
+  falloDrop = null,
+  onQuitar,
 }: Props) {
   const t = useTranslations("editor");
   const entradaRef = useRef<HTMLInputElement>(null);
@@ -260,7 +267,7 @@ export default function PanelImagen({
         <button
           type="button"
           disabled={!src}
-          onClick={() => onCambio(zonaId, { ...AJUSTE_CENTRADO })}
+          onClick={() => onQuitar?.(zonaId)}
           className="rounded border border-neutral-300 px-3 py-1.5 text-sm disabled:opacity-40"
         >
           {t("panelImagen.restablecer")}
@@ -271,9 +278,13 @@ export default function PanelImagen({
         {t("panelImagen.ayuda", { min: ZOOM_MIN, max: ZOOM_MAX })}
       </p>
 
-      {error ? (
+      {error ?? falloDrop ? (
         <p role="alert" className="mt-2 rounded bg-red-100 px-3 py-2 text-sm text-red-800">
-          {t(error === "muy-grande" ? "panelImagen.errorTamano" : "panelImagen.errorTipo")}
+          {t(
+            (error ?? falloDrop) === "muy-grande"
+              ? "panelImagen.errorTamano"
+              : "panelImagen.errorTipo",
+          )}
         </p>
       ) : null}
     </section>
