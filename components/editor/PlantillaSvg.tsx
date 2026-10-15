@@ -55,6 +55,8 @@ type Props = {
   /** SPEC 2.1 paso 3: texto seleccionado (contorno + gestos). */
   textoSeleccionado?: string | null;
   onSeleccionarTexto?: (id: string | null) => void;
+  /** SPEC 2.2 paso 3: fondo deselecciona zona y texto (antes solo texto). */
+  onDeseleccionar?: () => void;
   /** Arrastre de texto (deltas ya recortados a la caja del grupo). */
   onArrastrarTexto?: (id: string, dxSvg: number, dySvg: number) => void;
   /** SPEC 2.1 paso 4: manija de escala (tamaño base absoluto). */
@@ -69,6 +71,8 @@ type TipoArrastre =
   | { clase: "zona"; zonaId: string; ultimoX: number; ultimoY: number; movido: boolean }
   | { clase: "texto"; textoId: string; ultimoX: number; ultimoY: number; movido: boolean; x0: number; y0: number; ox0: number; oy0: number; enviadoX: number; enviadoY: number }
   | { clase: "escala"; textoId: string; ultimoX: number; ultimoY: number; movido: boolean; fijoX: number; fijoY: number; dist0: number; base0: number; min: number; max: number }
+  // SPEC 2.2 paso 3: toque sobre texto dentro de zona (toque = texto, arrastre = foto).
+  | { clase: "mixto"; zonaId: string; textoId: string; ultimoX: number; ultimoY: number; movido: boolean }
   | { clase: "fondo"; movido: boolean };
 
 export type DefectosPlantilla = {
@@ -295,6 +299,7 @@ export default function PlantillaSvg({
   onArrastrarZona,
   textoSeleccionado = null,
   onSeleccionarTexto,
+  onDeseleccionar,
   onArrastrarTexto,
   onEscalarTexto,
 }: Props) {
@@ -305,6 +310,7 @@ export default function PlantillaSvg({
   const arrastrarCb = useRef(onArrastrarZona);
   const seleccionarCb = useRef(onSeleccionarZona);
   const seleccionarTextoCb = useRef(onSeleccionarTexto);
+  const deseleccionarCb = useRef(onDeseleccionar);
   const arrastrarTextoCb = useRef(onArrastrarTexto);
   const escalarTextoCb = useRef(onEscalarTexto);
   useEffect(() => {
@@ -312,6 +318,7 @@ export default function PlantillaSvg({
     arrastrarCb.current = onArrastrarZona;
     seleccionarCb.current = onSeleccionarZona;
     seleccionarTextoCb.current = onSeleccionarTexto;
+    deseleccionarCb.current = onDeseleccionar;
     arrastrarTextoCb.current = onArrastrarTexto;
     escalarTextoCb.current = onEscalarTexto;
   });
@@ -415,6 +422,17 @@ export default function PlantillaSvg({
       const tid = el?.getAttribute("id") ?? "";
       return tid.startsWith("texto-editable-") ? tid : null;
     };
+    // SPEC 2.2 paso 3: zona ancestro aunque el g más cercano sea un texto
+    // (texto anidado dentro de zona en SVGs futuros del dueño).
+    const zonaAncestroDe = (objetivo: EventTarget | null): string | null => {
+      let el = objetivo instanceof Element ? objetivo.parentElement : null;
+      while (el) {
+        const id = el.getAttribute?.("id") ?? "";
+        if (ZONA_RE.test(id)) return id;
+        el = el.parentElement;
+      }
+      return null;
+    };
 
     for (const g of grupos) {
       const id = g.getAttribute("id") ?? "";
@@ -459,7 +477,11 @@ export default function PlantillaSvg({
             const foto = document.createElementNS("http://www.w3.org/2000/svg", "image");
             foto.setAttribute("data-foto", id);
             foto.setAttribute("clip-path", `url(#${clipId})`);
-            foto.setAttribute("preserveAspectRatio", "none");
+            // FIX proporción (fuera de SPEC 2.2, ver nota al final del spec):
+            // `slice` conserva la proporción siempre. Con la caja exacta del
+            // cover se ve idéntico a `none`; en la rama provisional (aún sin
+            // tamaño natural) recorta centrado en vez de deformar.
+            foto.setAttribute("preserveAspectRatio", "xMidYMid slice");
             (foto as SVGImageElement).setAttribute("href", ajuste.src);
             if (nat && nat.w > 0 && nat.h > 0) {
               // Auto-encuadre cover + pan/zoom del panel.
@@ -738,15 +760,20 @@ export default function PlantillaSvg({
         }
         return;
       }
-      const zid = zonaDe(e.target);
-      const tid = zid ? null : textoDe(e.target);
+      const zidCercano = zonaDe(e.target);
+      const tid = textoDe(e.target);
+      // SPEC 2.2 paso 3: texto anidado en zona → gesto mixto (toque = texto,
+      // arrastre = foto). Sin anidado, el texto ya gana solo.
+      const zid = zidCercano ?? (tid ? zonaAncestroDe(e.target) : null);
       if (!zid && !tid) {
-        // Fondo: un toque sin mover deselecciona el texto (la zona queda).
+        // Fondo: un toque sin mover deselecciona zona y texto (SPEC 2.2).
         arrastreRef.current = { clase: "fondo", movido: false };
         return;
       }
       if (e.pointerType === "mouse" && e.button !== 0) return;
-      if (tid) {
+      if (zid && tid) {
+        arrastreRef.current = { clase: "mixto", zonaId: zid, textoId: tid, ultimoX: e.clientX, ultimoY: e.clientY, movido: false };
+      } else if (tid) {
         seleccionarTextoCb.current?.(tid);
         // El gesto es relativo a su inicio (x0/y0 + offset inicial): así el
         // recorte es exacto aunque React no haya pintado entre movimientos.
@@ -773,6 +800,25 @@ export default function PlantillaSvg({
     };
     const mueve = (e: PointerEvent) => {
       if (!arrastreRef.current || arrastreRef.current.clase === "fondo") return;
+      // SPEC 2.2 paso 3: gesto mixto sin mover aún = sigue siendo toque.
+      if (arrastreRef.current.clase === "mixto") {
+        if (
+          Math.hypot(
+            e.clientX - arrastreRef.current.ultimoX,
+            e.clientY - arrastreRef.current.ultimoY,
+          ) < 3
+        ) {
+          return;
+        }
+        // Con movimiento, el gesto pasa a mover la foto de la zona.
+        arrastreRef.current = {
+          clase: "zona",
+          zonaId: arrastreRef.current.zonaId,
+          ultimoX: arrastreRef.current.ultimoX,
+          ultimoY: arrastreRef.current.ultimoY,
+          movido: false,
+        };
+      }
       const dxPx = e.clientX - arrastreRef.current.ultimoX;
       const dyPx = e.clientY - arrastreRef.current.ultimoY;
       arrastreRef.current.ultimoX = e.clientX;
@@ -823,7 +869,12 @@ export default function PlantillaSvg({
     };
     const arriba = () => {
       if (arrastreRef.current && arrastreRef.current.clase === "fondo" && !arrastreRef.current.movido) {
-        seleccionarTextoCb.current?.(null);
+        // SPEC 2.2 paso 3: el fondo deselecciona zona y texto.
+        if (deseleccionarCb.current) deseleccionarCb.current();
+        else seleccionarTextoCb.current?.(null);
+      } else if (arrastreRef.current && arrastreRef.current.clase === "mixto" && !arrastreRef.current.movido) {
+        // SPEC 2.2 paso 3: toque sin mover sobre texto (aunque viva en zona).
+        seleccionarTextoCb.current?.(arrastreRef.current.textoId);
       } else if (arrastreRef.current && arrastreRef.current.clase === "zona" && !arrastreRef.current.movido) {
         seleccionarCb.current?.(arrastreRef.current.zonaId);
       }

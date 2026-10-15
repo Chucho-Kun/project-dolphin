@@ -137,6 +137,10 @@
     "avisoNoDisponibleTitulo": "Design unavailable for now",
     "avisoNoDisponibleDesc": "We could not load the design for {code}. Try again later.",
     "enlaceInvalido": "That reopen link is not valid; you are starting fresh.",
+    "panel": {
+      "hint": "Tap a zone or a text in the design to edit it.",
+      "cerrar": "Close panel"
+    },
     "panelImagen": {
       "titulo": "Photo {zona}",
       "cargar": "Upload photo",

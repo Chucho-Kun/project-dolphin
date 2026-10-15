@@ -137,6 +137,10 @@
     "avisoNoDisponibleTitulo": "Diseño no disponible por ahora",
     "avisoNoDisponibleDesc": "No pudimos cargar el diseño de {code}. Intenta de nuevo más tarde.",
     "enlaceInvalido": "Ese enlace de reapertura no vale; empiezas de cero.",
+    "panel": {
+      "hint": "Toca una zona o un texto del diseño para editarlo.",
+      "cerrar": "Cerrar panel"
+    },
     "panelImagen": {
       "titulo": "Foto {zona}",
       "cargar": "Cargar foto",

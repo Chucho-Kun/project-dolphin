@@ -108,6 +108,9 @@ export default function EditorShell({
 }: Props) {
   const t = useTranslations("editor");
   const svgRef = useRef<SVGSVGElement | null>(null);
+  // SPEC 2.2 paso 4: foco del diálogo (al abrir → ×; Escape → canvas).
+  const cerrarRef = useRef<HTMLButtonElement | null>(null);
+  const lienzoRef = useRef<HTMLDivElement | null>(null);
 
   const [fotos, setFotos] = useState<Record<string, FotoEstado>>(() => {
     const base: Record<string, FotoEstado> = {};
@@ -137,9 +140,8 @@ export default function EditorShell({
     return base;
   });
   const [defectos, setDefectos] = useState<DefectosPlantilla | null>(null);
-  const [zonaSeleccionada, setZonaSeleccionada] = useState<string | null>(
-    zonas[0] ?? null,
-  );
+  // SPEC 2.2: sin selección inicial; el hint manda hasta el primer toque.
+  const [zonaSeleccionada, setZonaSeleccionada] = useState<string | null>(null);
   // SPEC 2.1 paso 3: texto seleccionado en el canvas (contorno + gestos).
   const [textoSeleccionado, setTextoSeleccionado] = useState<string | null>(null);
   const [naturales, setNaturales] = useState<Record<string, { w: number; h: number }>>({});
@@ -289,15 +291,20 @@ export default function EditorShell({
     const f = fotos[zonaId];
     if (!f) {
       setZonaSeleccionada(zonaId);
+      setTextoSeleccionado(null);
       return;
     }
+    // SPEC 2.2: arrastrar la foto elige su zona (sustituye el panel).
     setZonaSeleccionada(zonaId);
+    setTextoSeleccionado(null);
     cambiarAjuste(zonaId, { ...f.ajuste, x: f.ajuste.x + dx, y: f.ajuste.y + dy });
   }
 
   /** SPEC 2.1 paso 3: el canvas ya recortó el delta a la caja del grupo. */
   function alArrastrarTexto(id: string, dx: number, dy: number) {
+    // SPEC 2.2: arrastrar el texto lo elige (sustituye el panel).
     setTextoSeleccionado(id);
+    setZonaSeleccionada(null);
     // Base del render actual; el updater acumula aunque React no haya
     // pintado entre gestos (prev gana si ya existe).
     const base = textoBase(id);
@@ -476,19 +483,112 @@ export default function EditorShell({
 
   const listo = defectos != null;
   const enlace = token ? `/${locale}/editor/${productCode}?t=${token}` : null;
+  // SPEC 2.2: el flotante solo refleja la selección del canvas.
+  const areaVisible: string | null = textoSeleccionado ?? zonaSeleccionada;
+  /** Cierra el flotante limpiando la selección; los ajustes se conservan. */
+  function cerrarPanel() {
+    setTextoSeleccionado(null);
+    setZonaSeleccionada(null);
+  }
+  // SPEC 2.2 paso 4: al abrir el flotante el foco va al × (solo al abrir,
+  // no al cambiar de área); Escape lo cierra y devuelve el foco al canvas.
+  const abiertoAntes = useRef(false);
+  useEffect(() => {
+    const abierto = areaVisible != null;
+    if (abierto && !abiertoAntes.current) cerrarRef.current?.focus();
+    abiertoAntes.current = abierto;
+  }, [areaVisible]);
+  useEffect(() => {
+    if (areaVisible == null) return;
+    const alTeclado = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        cerrarPanel();
+        lienzoRef.current?.focus();
+      }
+    };
+    document.addEventListener("keydown", alTeclado);
+    return () => document.removeEventListener("keydown", alTeclado);
+  }, [areaVisible]);
+  // Etiqueta del diálogo: misma que el panel mostrado.
+  const etiquetaPanel =
+    textoSeleccionado != null
+      ? t("panelTexto.titulo", {
+          clave: textoSeleccionado.replace("texto-editable-", ""),
+        })
+      : zonaSeleccionada != null
+        ? t("panelImagen.titulo", {
+            zona: zonaSeleccionada.replace("zona-editable-", ""),
+          })
+        : "";
+
+  const acciones = (
+    <section
+      aria-label={t("shell.acciones")}
+      className="flex flex-wrap items-center gap-2 rounded border border-neutral-200 bg-white p-3"
+    >
+      <button
+        type="button"
+        onClick={guardar}
+        disabled={guardando || !listo}
+        className="rounded bg-black px-4 py-2.5 font-bold text-white hover:bg-neutral-800 disabled:opacity-50"
+      >
+        {t(guardando ? "shell.guardando" : "shell.guardar")}
+      </button>
+      <button
+        type="button"
+        onClick={descargar}
+        disabled={descargando || !listo}
+        className="rounded border border-neutral-300 bg-white px-4 py-2.5 font-bold hover:bg-neutral-50 disabled:opacity-50"
+      >
+        {t(descargando ? "shell.descargando" : "shell.descargar")}
+      </button>
+
+      {enlace ? (
+        <div className="rounded bg-green-50 px-3 py-2 text-sm">
+          <p>{t("shell.enlaceListo")}</p>
+          <p className="mt-1 font-mono break-all text-xs">{enlace}</p>
+          <button
+            type="button"
+            onClick={() => copiarEnlace(`${window.location.origin}${enlace}`)}
+            className="mt-2 rounded border border-neutral-300 bg-white px-3 py-1 text-sm"
+          >
+            {t(copiado ? "shell.copiado" : "shell.copiar")}
+          </button>
+        </div>
+      ) : null}
+
+      {error ? (
+        <p role="alert" className="rounded bg-red-100 px-3 py-2 text-sm text-red-800">
+          {t(`shell.${error}`)}
+        </p>
+      ) : null}
+    </section>
+  );
 
   return (
-    <div className="mt-6 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-      <div className="min-w-0">
+    <div className="mt-6 flex min-w-0 flex-col gap-6">
+      {/* SPEC 2.2 paso 1: acciones siempre visibles en barra sticky arriba. */}
+      <div className="sticky top-0 z-30 bg-white/95 py-2 backdrop-blur">
+        {acciones}
+      </div>
+      <div ref={lienzoRef} tabIndex={-1} className="min-w-0 outline-none">
         <PlantillaSvg
           svgText={svgText}
           imagenes={imagenesCanvas}
           textos={textosCanvas}
           zonaSeleccionada={zonaSeleccionada}
-          onSeleccionarZona={setZonaSeleccionada}
+          onSeleccionarZona={(z) => {
+            // SPEC 2.2: elegir un área sustituye el panel (exclusión mutua).
+            setZonaSeleccionada(z);
+            setTextoSeleccionado(null);
+          }}
           onArrastrarZona={alArrastrarZona}
           textoSeleccionado={textoSeleccionado}
-          onSeleccionarTexto={setTextoSeleccionado}
+          onSeleccionarTexto={(id) => {
+            setTextoSeleccionado(id);
+            if (id != null) setZonaSeleccionada(null);
+          }}
+          onDeseleccionar={cerrarPanel}
           onArrastrarTexto={alArrastrarTexto}
           onEscalarTexto={alEscalarTexto}
           onDefectos={setDefectos}
@@ -496,79 +596,58 @@ export default function EditorShell({
         />
       </div>
 
-      <aside className="flex min-w-0 flex-col gap-4">
-        {zonas.map((zid) => (
-          <PanelImagen
-            key={zid}
-            zonaId={zid}
-            src={fotos[zid]?.src ?? null}
-            ajuste={fotos[zid]?.ajuste ?? { ...AJUSTE_CENTRADO }}
-            caja={
-              defectos?.cajas[zid]
-                ? { w: defectos.cajas[zid].w, h: defectos.cajas[zid].h }
-                : null
-            }
-            natural={naturales[zid] ?? null}
-            onCambio={cambiarAjuste}
-            onArchivo={alArchivo}
-          />
-        ))}
-
-        {textosIds.map((tid) => (
-          <PanelTexto
-            key={tid}
-            textoId={tid}
-            ajuste={textoBase(tid)}
-            referencia={referencias[tid] ?? null}
-            onCambio={cambiarTexto}
-            onRestablecer={restablecerTexto}
-          />
-        ))}
-
-        <section
-          aria-label={t("shell.acciones")}
-          className="flex flex-col gap-2 rounded border border-neutral-200 p-3"
+      {/* SPEC 2.2 paso 2: sin selección, hint; con selección, flotante. */}
+      {areaVisible == null ? (
+        <p role="status" className="rounded border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-center text-sm text-neutral-600">
+          {t("panel.hint")}
+        </p>
+      ) : (
+        <div
+          role="dialog"
+          aria-label={etiquetaPanel}
+          className="fixed bottom-4 left-1/2 z-40 max-h-[60vh] w-[min(92vw,24rem)] -translate-x-1/2 overflow-y-auto rounded-lg border border-neutral-200 bg-white p-3 shadow-xl lg:bottom-auto lg:left-auto lg:right-4 lg:top-1/2 lg:w-80 lg:max-h-[80vh] lg:translate-x-0 lg:-translate-y-1/2"
         >
-          <button
-            type="button"
-            onClick={guardar}
-            disabled={guardando || !listo}
-            className="rounded bg-black px-4 py-2.5 font-bold text-white hover:bg-neutral-800 disabled:opacity-50"
-          >
-            {t(guardando ? "shell.guardando" : "shell.guardar")}
-          </button>
-          <button
-            type="button"
-            onClick={descargar}
-            disabled={descargando || !listo}
-            className="rounded border border-neutral-300 bg-white px-4 py-2.5 font-bold hover:bg-neutral-50 disabled:opacity-50"
-          >
-            {t(descargando ? "shell.descargando" : "shell.descargar")}
-          </button>
-
-          {enlace ? (
-            <div className="rounded bg-green-50 px-3 py-2 text-sm">
-              <p>{t("shell.enlaceListo")}</p>
-              <p className="mt-1 font-mono break-all text-xs">{enlace}</p>
-              <button
-                type="button"
-                onClick={() =>
-                  copiarEnlace(`${window.location.origin}${enlace}`)
-                }
-                className="mt-2 rounded border border-neutral-300 bg-white px-3 py-1 text-sm"
-              >
-                {t(copiado ? "shell.copiado" : "shell.copiar")}
-              </button>
-            </div>
+          <div className="mb-2 flex justify-end">
+            <button
+              ref={cerrarRef}
+              type="button"
+              onClick={cerrarPanel}
+              aria-label={t("panel.cerrar")}
+              className="rounded border border-neutral-300 bg-white px-2.5 py-1 text-sm font-bold hover:bg-neutral-50"
+            >
+              ×
+            </button>
+          </div>
+          {textoSeleccionado != null ? (
+            <PanelTexto
+              key={textoSeleccionado}
+              textoId={textoSeleccionado}
+              ajuste={textoBase(textoSeleccionado)}
+              referencia={referencias[textoSeleccionado] ?? null}
+              onCambio={cambiarTexto}
+              onRestablecer={restablecerTexto}
+            />
+          ) : zonaSeleccionada != null ? (
+            <PanelImagen
+              key={zonaSeleccionada}
+              zonaId={zonaSeleccionada}
+              src={fotos[zonaSeleccionada]?.src ?? null}
+              ajuste={fotos[zonaSeleccionada]?.ajuste ?? { ...AJUSTE_CENTRADO }}
+              caja={
+                defectos?.cajas[zonaSeleccionada]
+                  ? {
+                      w: defectos.cajas[zonaSeleccionada].w,
+                      h: defectos.cajas[zonaSeleccionada].h,
+                    }
+                  : null
+              }
+              natural={naturales[zonaSeleccionada] ?? null}
+              onCambio={cambiarAjuste}
+              onArchivo={alArchivo}
+            />
           ) : null}
-
-          {error ? (
-            <p role="alert" className="rounded bg-red-100 px-3 py-2 text-sm text-red-800">
-              {t(`shell.${error}`)}
-            </p>
-          ) : null}
-        </section>
-      </aside>
+        </div>
+      )}
     </div>
   );
 }

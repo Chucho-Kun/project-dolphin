@@ -122,18 +122,6 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio, onRe
         </label>
       </div>
 
-      <p
-        aria-label={t("panelTexto.vistaPrevia")}
-        className="mt-2 truncate rounded bg-neutral-100 px-2 py-1.5"
-        style={{
-          fontSize: Math.min(resuelto.tamanoEfectivo, 40),
-          color: ajuste.color,
-          fontFamily: `${ajuste.fuente}, sans-serif`,
-        }}
-      >
-        {resuelto.mostrado || t("panelTexto.vacio")}
-      </p>
-
       {resuelto.truncado ? (
         <p role="status" className="mt-2 rounded bg-amber-100 px-3 py-2 text-sm">
           {t("panelTexto.truncado")}
