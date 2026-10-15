@@ -144,7 +144,7 @@
       "acercar": "Acercar",
       "alejar": "Alejar",
       "restablecer": "Restablecer",
-      "vacia": "Sin foto todavía. Carga una desde tu dispositivo.",
+      "vacia": "Puedes agregar una foto en esta sección",
       "ayuda": "Zoom de {min} a {max} veces. La foto siempre queda dentro de su zona.",
       "errorTipo": "Ese archivo no vale: usa JPG, PNG o WebP.",
       "errorTamano": "La foto pasa de 10 MB: usa una más ligera."

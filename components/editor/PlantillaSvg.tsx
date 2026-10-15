@@ -88,6 +88,9 @@ export type DefectosPlantilla = {
 
 const ZONA_RE = /^zona-editable-([1-9]\d*)$/;
 
+/** Contorno de lo seleccionado (zonas y textos): rojo para indicarlo. */
+const COLOR_SELECCION = "#dc2626";
+
 function numero(attr: string | null): number {
   const n = Number(attr);
   return Number.isFinite(n) ? n : 0;
@@ -482,6 +485,10 @@ export default function PlantillaSvg({
           }
 
           // Contorno de selección propio (UI: excluido del PDF vía data-ui).
+          // Clicable (pointer-events all con fill none): las caras vacías
+          // no tienen qué pulsar (marcador oculto), así el contorno recibe
+          // el clic y la zona se selecciona. El contorno del texto sigue
+          // sin interceptar para no taparlo.
           const sel = document.createElementNS("http://www.w3.org/2000/svg", "rect");
           sel.setAttribute("data-ui", "seleccion");
           sel.setAttribute("x", String(caja.x));
@@ -489,10 +496,10 @@ export default function PlantillaSvg({
           sel.setAttribute("width", String(caja.w));
           sel.setAttribute("height", String(caja.h));
           sel.setAttribute("fill", "none");
-          sel.setAttribute("stroke", zonaSeleccionada === id ? "#111" : "#999");
+          sel.setAttribute("stroke", zonaSeleccionada === id ? COLOR_SELECCION : "#999");
           sel.setAttribute("stroke-width", zonaSeleccionada === id ? "3" : "1.5");
           sel.setAttribute("stroke-dasharray", zonaSeleccionada === id ? "none" : "8 6");
-          sel.style.pointerEvents = "none";
+          sel.style.pointerEvents = "all";
           g.appendChild(sel);
         }
       } else if (id.startsWith("texto-editable-")) {
@@ -635,7 +642,7 @@ export default function PlantillaSvg({
             marco.setAttribute("width", String(meta.caja.w));
             marco.setAttribute("height", String(meta.caja.h));
             marco.setAttribute("fill", "none");
-            marco.setAttribute("stroke", "#111");
+            marco.setAttribute("stroke", COLOR_SELECCION);
             marco.setAttribute("stroke-width", "2.5");
             marco.style.pointerEvents = "none";
             svg.appendChild(marco);

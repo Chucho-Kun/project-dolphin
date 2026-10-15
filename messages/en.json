@@ -144,7 +144,7 @@
       "acercar": "Zoom in",
       "alejar": "Zoom out",
       "restablecer": "Reset",
-      "vacia": "No photo yet. Upload one from your device.",
+      "vacia": "You can add a photo from your device.",
       "ayuda": "Zoom from {min} to {max} times. The photo always stays inside its zone.",
       "errorTipo": "That file does not work: use JPG, PNG or WebP.",
       "errorTamano": "The photo is over 10 MB: use a lighter one."
