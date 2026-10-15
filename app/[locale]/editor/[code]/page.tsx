@@ -1,5 +1,16 @@
 import { notFound } from "next/navigation";
-import { Roboto } from "next/font/google";
+import {
+  Dancing_Script,
+  Inter,
+  Lato,
+  Montserrat,
+  Open_Sans,
+  Oswald,
+  Playfair_Display,
+  Poppins,
+  Roboto,
+  Roboto_Condensed,
+} from "next/font/google";
 import { eq } from "drizzle-orm";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
@@ -28,14 +39,85 @@ async function findProductByCode(code: string): Promise<Product | null> {
   }
 }
 
-// Fuente fija del editor (SPEC 02: lista OFL inicial = Roboto). Alcance solo
-// a esta página para no tocar home/producto (criterio del spec).
+// Biblioteca cerrada SPEC 2.4: 10 familias OFL autohospedadas (WOFF2 del
+// build, cero <link> a CDN en runtime). Las 10 se cargan siempre; el coste
+// de descargar las no usadas se acepta en v1. Alcance solo a esta página
+// para no tocar home/producto.
 const roboto = Roboto({
-  subsets: ["latin"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "700"],
-  style: ["normal", "italic"],
+  style: ["normal"],
   display: "swap",
 });
+const openSans = Open_Sans({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const lato = Lato({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const montserrat = Montserrat({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const robotoCondensed = Roboto_Condensed({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const oswald = Oswald({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const poppins = Poppins({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const inter = Inter({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const playfairDisplay = Playfair_Display({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const dancingScript = Dancing_Script({
+  subsets: ["latin", "latin-ext"],
+  weight: ["400", "700"],
+  style: ["normal"],
+  display: "swap",
+});
+const clasesFuentesEditor = [
+  roboto.className,
+  openSans.className,
+  lato.className,
+  montserrat.className,
+  robotoCondensed.className,
+  oswald.className,
+  poppins.className,
+  inter.className,
+  playfairDisplay.className,
+  dancingScript.className,
+].join(" ");
+// La interfaz queda en Roboto sans (el inline gana a las 10 clases para la
+// UI; cada <text> del SVG conserva su familia por su propio inline).
+const estiloInterfazEditor = { fontFamily: '"Roboto", sans-serif' } as const;
 
 function Aviso({
   titulo,
@@ -49,7 +131,10 @@ function Aviso({
   volverHref: string;
 }) {
   return (
-    <main className={`mx-auto max-w-3xl px-4 py-10 ${roboto.className}`}>
+    <main
+      className={`mx-auto max-w-3xl px-4 py-10 ${clasesFuentesEditor}`}
+      style={estiloInterfazEditor}
+    >
       <h1 className="text-2xl font-bold">{titulo}</h1>
       <p className="mt-3 text-neutral-700">{descripcion}</p>
       <Link href={volverHref} className="mt-6 inline-block text-sm underline">
@@ -118,7 +203,10 @@ export default async function EditorPage({
   const textosIniciales = reapertura?.ajustesTextos ?? [];
 
   return (
-    <main className={`mx-auto max-w-6xl px-4 py-10 ${roboto.className}`}>
+    <main
+      className={`mx-auto max-w-6xl px-4 py-10 ${clasesFuentesEditor}`}
+      style={estiloInterfazEditor}
+    >
       <p className="font-mono text-xs text-neutral-500">{product.code}</p>
       <h1 className="mt-1 text-3xl font-bold">{title}</h1>
       {reapertura === null && typeof token === "string" && token.length > 0 ? (

@@ -67,6 +67,130 @@ async function incrustarImagenes(clon: SVGSVGElement): Promise<void> {
   }
 }
 
+/** "700", "bold" → "700"; resto ⇒ "400". */
+function normalizarPesoCss(valor: string): string {
+  const v = valor.trim().toLowerCase();
+  if (v === "700" || v === "bold") return "700";
+  if (v.includes("700")) return "700";
+  return "400";
+}
+
+/** `"Playfair Display", Roboto, sans-serif` → `Playfair Display`. */
+function primeraFamilia(valor: string): string {
+  const primera = valor.split(",")[0]?.trim() ?? "";
+  return primera.replace(/^["']+|["']+$/g, "").trim();
+}
+
+/** Familias y pesos usados por los <text> del clon (solo lo usado, no las 10). */
+function familiasYPesosUsados(clon: SVGSVGElement): Map<string, Set<string>> {
+  const usos = new Map<string, Set<string>>();
+  for (const nodo of Array.from(clon.querySelectorAll("text"))) {
+    const el = nodo as SVGTextElement;
+    const familiaRaw =
+      el.style.fontFamily || nodo.getAttribute("font-family") || "Roboto";
+    const familia = primeraFamilia(familiaRaw) || "Roboto";
+    const pesoRaw =
+      el.style.fontWeight || nodo.getAttribute("font-weight") || "400";
+    const peso = normalizarPesoCss(pesoRaw);
+    if (!usos.has(familia)) usos.set(familia, new Set());
+    usos.get(familia)?.add(peso);
+  }
+  return usos;
+}
+
+/** Reglas @font-face del documento para una familia y peso (latin + latin-ext). */
+function reglasFuentePara(familia: string, peso: string): CSSFontFaceRule[] {
+  const halladas: CSSFontFaceRule[] = [];
+  const hojas = Array.from(document.styleSheets ?? []);
+  for (const hoja of hojas) {
+    let reglas: CSSRuleList | null = null;
+    try {
+      reglas = hoja.cssRules;
+    } catch {
+      continue;
+    }
+    if (!reglas) continue;
+    for (const regla of Array.from(reglas)) {
+      if (
+        !(regla instanceof CSSFontFaceRule) &&
+        regla.type !== CSSRule.FONT_FACE_RULE
+      ) {
+        continue;
+      }
+      const estilo = (regla as CSSFontFaceRule).style;
+      const fam = estilo
+        .getPropertyValue("font-family")
+        .replace(/^["']+|["']+$/g, "")
+        .trim();
+      if (fam !== familia) continue;
+      const estiloFuente = estilo.getPropertyValue("font-style").trim().toLowerCase();
+      if (estiloFuente !== "" && estiloFuente !== "normal") continue;
+      const pesoRegla = estilo.getPropertyValue("font-weight").trim();
+      // Variable ("400 700") sirve a ambos pesos; estática debe coincidir.
+      if (
+        pesoRegla !== "" &&
+        !pesoRegla.includes(peso) &&
+        normalizarPesoCss(pesoRegla) !== peso
+      ) {
+        continue;
+      }
+      halladas.push(regla as CSSFontFaceRule);
+    }
+  }
+  return halladas;
+}
+
+/**
+ * Incrusta @font-face con el WOFF2 en base64 de las familias y pesos usados
+ * dentro del clon serializado (SPEC 2.4 paso 6). El raster vía `<img>` no ve
+ * las fuentes del documento, así que sin esto el PDF saldría en fallback.
+ * Solo lo usado; si una fuente falla, se omite sin romper el PDF.
+ */
+async function incrustarFuentes(clon: SVGSVGElement): Promise<void> {
+  try {
+    const usos = familiasYPesosUsados(clon);
+    if (usos.size === 0) return;
+    const bloques: string[] = [];
+    for (const [familia, pesos] of usos) {
+      for (const peso of pesos) {
+        const reglas = reglasFuentePara(familia, peso);
+        for (const regla of reglas) {
+          let css = regla.cssText;
+          const src = regla.style.getPropertyValue("src");
+          const urls = Array.from(
+            src.matchAll(/url\(["']?([^"')]+)["']?\)/g),
+          ).map((m) => m[1]);
+          let util = false;
+          for (const url of urls) {
+            if (!url || url.startsWith("data:")) {
+              util = true;
+              continue;
+            }
+            try {
+              const absoluta = new URL(url, document.baseURI).toString();
+              const dataUrl = await aDataUrl(absoluta);
+              css = css.split(url).join(dataUrl);
+              util = true;
+            } catch {
+              // Esa URL se omite; si queda alguna útil, la regla sigue valiendo.
+            }
+          }
+          if (util) bloques.push(css);
+        }
+      }
+    }
+    if (bloques.length === 0) return;
+    const estilo = document.createElementNS(
+      "http://www.w3.org/2000/svg",
+      "style",
+    );
+    estilo.textContent = bloques.join("\n");
+    clon.insertBefore(estilo, clon.firstChild);
+  } catch {
+    // Sin incrustación se rasteriza con fallback (no se bloquea el PDF).
+  }
+}
+
 function cargarImagen(src: string, w: number, h: number): Promise<HTMLImageElement> {
   return new Promise((ok, mal) => {
     const img = new Image();
@@ -86,6 +210,9 @@ function cargarImagen(src: string, w: number, h: number): Promise<HTMLImageEleme
  * SPEC 2.1 paso 7: la alineación (text-anchor), la posición (translate) y
  * la escala (font-size) de los textos se reflejan solas porque el canvas
  * las aplica como atributos del SVG vivo y aquí se serializa ese nodo.
+ * SPEC 2.4 paso 6: la familia y peso de cada texto se incrustan como
+ * @font-face en base64 dentro del clon (el <img> del raster no ve las
+ * fuentes del documento).
  * Todo overlay de UI (contornos, manijas) debe llevar `data-ui` para que
  * salga del PDF (se elimina abajo).
  */
@@ -104,6 +231,7 @@ export async function rasterizarSvgAJpeg(
   // UI del editor (contornos de selección): visible en pantalla, fuera del PDF.
   clon.querySelectorAll("[data-ui]").forEach((n) => n.remove());
   await incrustarImagenes(clon);
+  await incrustarFuentes(clon);
   clon.setAttribute("width", String(w));
   clon.setAttribute("height", String(h));
   const texto = new XMLSerializer().serializeToString(clon);

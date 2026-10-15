@@ -1,6 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
+import {
+  esperarFuentes,
+  familiaDeFuente,
+  normalizarPesoTexto,
+} from "@/lib/texto";
 
 // components/editor/PlantillaSvg.tsx — Canvas del editor (SPEC 02 Paso 4).
 //
@@ -29,6 +34,8 @@ export type TextoEnPlantilla = {
   tamano?: number;
   color?: string;
   fuente?: string;
+  /** SPEC 2.4 paso 4: peso por texto (ausente ⇒ 400). */
+  peso?: 400 | 700;
   /** SPEC 2.1 paso 3: desplazamiento en unidades SVG (ya recortado). */
   x?: number;
   y?: number;
@@ -345,6 +352,25 @@ export default function PlantillaSvg({
   // Últimos defectos enviados (para reenviar fusionados en la remedición).
   const defectosAcum = useRef<DefectosPlantilla | null>(null);
 
+  // SPEC 2.4 paso 4: espera a la familia y peso reales antes de medir/pintar.
+  // Al cargar, repinta con la métrica real (el auto-shrink no desborda).
+  const [fuentesTick, setFuentesTick] = useState(0);
+  const firmaFuentes = (textos ?? [])
+    .map((t) => `${t.id}:${t.fuente ?? "roboto"}:${t.peso ?? 400}`)
+    .join("|");
+  useEffect(() => {
+    let vivo = true;
+    esperarFuentes(
+      (textos ?? []).map((t) => ({ fuente: t.fuente ?? "roboto", peso: t.peso })),
+    ).then(() => {
+      if (vivo) setFuentesTick((c) => c + 1);
+    });
+    return () => {
+      vivo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firmaFuentes]);
+
   // Tamaños naturales de las imágenes (para el encuadre cover).
   useEffect(() => {
     let vivo = true;
@@ -618,11 +644,16 @@ export default function PlantillaSvg({
         if (nodoTexto && ajuste) {
           nodoTexto.textContent = ajuste.contenido;
           // Estilos inline: las clases del dueño ganan a los atributos, así
-          // que lo que edita el invitado va inline (peso/estilo siguen de la
-          // clase). La alineación ausente quita el override (vuelve al SVG).
+          // que lo que edita el invitado va inline. SPEC 2.4 paso 4: familia
+          // del catálogo + peso del ajuste (sin itálica en v1); si la fuente
+          // falla, el fallback es Roboto 400 sin error.
           if (ajuste.tamano != null) nodoTexto.style.fontSize = `${ajuste.tamano}px`;
           if (ajuste.color) nodoTexto.style.fill = ajuste.color;
-          if (ajuste.fuente) nodoTexto.style.fontFamily = `${ajuste.fuente}, sans-serif`;
+          const familia = familiaDeFuente(ajuste.fuente ?? "roboto");
+          const peso = normalizarPesoTexto(ajuste.peso);
+          nodoTexto.style.fontFamily = `"${familia}", Roboto, sans-serif`;
+          nodoTexto.style.fontWeight = String(peso);
+          nodoTexto.style.fontStyle = "normal";
           // SPEC 2.1: el texto siempre va alineado a la izquierda.
           nodoTexto.style.setProperty("text-anchor", "start");
           // SPEC 2.1 paso 3: desplazamiento (compuesto tras el transform del
@@ -933,7 +964,7 @@ export default function PlantillaSvg({
       svg.removeEventListener("pointercancel", arriba);
       svg.querySelectorAll("[data-ui]").forEach((n) => n.remove());
     };
-  }, [svgText, imagenes, textos, zonaSeleccionada, textoSeleccionado, naturales, svgRef]);
+  }, [svgText, imagenes, textos, zonaSeleccionada, textoSeleccionado, naturales, svgRef, fuentesTick]);
 
   // SPEC 2.3 paso 2: solo archivos externos; drags internos (mover foto
   // o texto del SPEC 2.1, texto seleccionado) no traen `Files` y se ignoran.

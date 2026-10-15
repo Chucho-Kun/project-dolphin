@@ -10,6 +10,11 @@ import {
   type AjusteTexto,
   type ReferenciaTexto,
 } from "@/lib/texto";
+import {
+  esFuenteValida,
+  FUENTE_DEFAULT,
+  normalizarFuente,
+} from "@/lib/fuentes";
 
 // components/editor/PanelTexto.tsx — Panel de textos (SPEC 02 Paso 6).
 //
@@ -58,6 +63,13 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio, onRe
     }
     onCambio(textoId, siguiente);
   }
+
+  // SPEC 2.4 paso 3: selectores por texto (familia + peso). Sin preview: la
+  // muestra es el propio canvas. Legado "Roboto" se muestra como "roboto".
+  const fuenteId = esFuenteValida(ajuste.fuente)
+    ? normalizarFuente(ajuste.fuente)
+    : FUENTE_DEFAULT;
+  const pesoValor = ajuste.peso === 700 ? "700" : "400";
 
   return (
     <section aria-label={etiqueta} className="rounded border border-neutral-200 p-3">
@@ -109,15 +121,29 @@ export default function PanelTexto({ textoId, ajuste, referencia, onCambio, onRe
         <label className="block text-sm">
           {t("panelTexto.fuente")}
           <select
-            value={ajuste.fuente}
+            value={fuenteId}
             onChange={(e) => cambiar({ fuente: e.target.value })}
             className="mt-1 block rounded border border-neutral-300 bg-white px-2 py-1.5"
           >
             {FUENTES_EDITOR.map((f) => (
-              <option key={f} value={f}>
-                {f}
+              <option key={f.id} value={f.id}>
+                {f.familia}
               </option>
             ))}
+          </select>
+        </label>
+
+        <label className="block text-sm">
+          {t("panelTexto.peso")}
+          <select
+            value={pesoValor}
+            onChange={(e) =>
+              cambiar({ peso: e.target.value === "700" ? 700 : 400 })
+            }
+            className="mt-1 block rounded border border-neutral-300 bg-white px-2 py-1.5"
+          >
+            <option value="400">{t("panelTexto.pesoRegular")}</option>
+            <option value="700">{t("panelTexto.pesoBold")}</option>
           </select>
         </label>
       </div>

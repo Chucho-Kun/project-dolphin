@@ -8,6 +8,7 @@ import {
   type CustomizationAjustes,
   type CustomizationImagen,
 } from "@/db/schema";
+import { esFuenteValida, normalizarFuente } from "@/lib/fuentes";
 
 export const dynamic = "force-dynamic";
 
@@ -20,8 +21,8 @@ const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const R2KEY_RE = /^[A-Za-z0-9][A-Za-z0-9/_.-]{0,400}\.(jpg|jpeg|png|webp)$/i;
 const COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
-// Lista fija Google OFL inicial (SPEC 02). Se amplía en otro spec.
-const FUENTES = ["Roboto"] as const;
+// SPEC 2.4: catálogo cerrado en lib/fuentes.ts (10 ids + alias legado
+// "Roboto" que se normaliza a "roboto"; el resto se rechaza).
 // Alineaciones del SPEC 2.1 (opcionales: los ?t= viejos no las traen).
 const ALINEACIONES = ["izquierda", "centro", "derecha"] as const;
 
@@ -66,6 +67,7 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
       tamano?: unknown;
       color?: unknown;
       fuente?: unknown;
+      peso?: unknown;
       alineacion?: unknown;
       x?: unknown;
       y?: unknown;
@@ -76,7 +78,9 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
     // servidor solo acota abuso (antes 500, insuficiente para el 250 %).
     if (!esNumero(r.tamano) || r.tamano < 1 || r.tamano > 2000) return false;
     if (!COLOR_RE.test(String(r.color ?? ""))) return false;
-    if (!(FUENTES as readonly string[]).includes(String(r.fuente ?? ""))) return false;
+    if (typeof r.fuente !== "string" || !esFuenteValida(r.fuente)) return false;
+    // SPEC 2.4: peso opcional (ausente ⇒ 400); distinto de 400/700 se rechaza.
+    if (r.peso !== undefined && r.peso !== 400 && r.peso !== 700) return false;
     // SPEC 2.1: alineación + desplazamiento opcionales (los ?t= viejos no
     // los traen); si vienen, con forma válida (cota ±10000 como imágenes).
     if (
@@ -93,8 +97,18 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
   return textosOk;
 }
 
-async function productoExiste(code: string): Promise<boolean | null> {
-  try {
+/** Normaliza el alias legado "Roboto" → "roboto" antes de guardar. */
+function normalizarAjustes(ajustes: CustomizationAjustes): CustomizationAjustes {
+  return {
+    imagenes: ajustes.imagenes,
+    textos: ajustes.textos.map((t) => ({
+      ...t,
+      fuente: normalizarFuente(t.fuente),
+    })),
+  };
+}
+
+async function productoExiste(code: string): Promise<boolean | null> {  try {
     const db = getDb();
     const filas = await db
       .select({ code: products.code })
@@ -172,7 +186,7 @@ export async function POST(req: Request) {
       productCode,
       tokenSecreto,
       imagenes: cuerpo.imagenes as CustomizationImagen[],
-      ajustes: cuerpo.ajustes as CustomizationAjustes,
+      ajustes: normalizarAjustes(cuerpo.ajustes as CustomizationAjustes),
     });
   } catch {
     return NextResponse.json({ error: "base-no-disponible" }, { status: 503 });
@@ -224,7 +238,7 @@ export async function PUT(req: Request) {
       .update(customizations)
       .set({
         imagenes: cuerpo.imagenes as CustomizationImagen[],
-        ajustes: cuerpo.ajustes as CustomizationAjustes,
+        ajustes: normalizarAjustes(cuerpo.ajustes as CustomizationAjustes),
         actualizadoEn: sql`now()`,
       })
       .where(eq(customizations.tokenSecreto, tokenSecreto));

@@ -15,6 +15,7 @@ import {
   type AjusteImagen,
 } from "@/lib/encuadre";
 import {
+  esperarFuentes,
   normalizarPosicionTexto,
   PISO_AUTO_SHRINK,
   resolverTexto,
@@ -22,6 +23,11 @@ import {
   type AjusteTexto,
   type ReferenciaTexto,
 } from "@/lib/texto";
+import {
+  esFuenteValida,
+  FUENTE_DEFAULT,
+  normalizarFuente,
+} from "@/lib/fuentes";
 import { descargarPdfDelSvg } from "@/lib/pdf";
 
 // components/editor/EditorShell.tsx — Layout canvas+paneles (SPEC 02 Paso 7).
@@ -47,6 +53,8 @@ export type TextoInicial = {
   // SPEC 2.1: opcionales (los ?t= viejos no los traen).
   x?: number;
   y?: number;
+  // SPEC 2.4: peso opcional (ausente ⇒ 400).
+  peso?: 400 | 700;
 };
 
 type Props = {
@@ -127,14 +135,21 @@ export default function EditorShell({
   const [textos, setTextos] = useState<Record<string, AjusteTexto>>(() => {
     const base: Record<string, AjusteTexto> = {};
     for (const tx of textosIniciales) {
+      // SPEC 2.4 paso 5: alias legado "Roboto" → "roboto"; desconocida o
+      // ausente ⇒ "roboto"; peso ausente ⇒ 400 (se omite, el default manda).
+      const fuenteId =
+        typeof tx.fuente === "string" && esFuenteValida(tx.fuente)
+          ? normalizarFuente(tx.fuente)
+          : FUENTE_DEFAULT;
       base[tx.id] = {
         contenido: tx.contenido,
         tamano: tx.tamano,
         color: tx.color,
-        fuente: tx.fuente,
+        fuente: fuenteId,
         // SPEC 2.1: restaura posición si el ?t= la trae.
         ...(typeof tx.x === "number" && Number.isFinite(tx.x) ? { x: tx.x } : {}),
         ...(typeof tx.y === "number" && Number.isFinite(tx.y) ? { y: tx.y } : {}),
+        ...(tx.peso === 700 ? { peso: 700 as const } : {}),
       };
     }
     return base;
@@ -157,6 +172,29 @@ export default function EditorShell({
     zonaId: string;
     codigo: "tipo-no-valido" | "muy-grande";
   } | null>(null);
+  // SPEC 2.4 paso 4: remide el auto-shrink con la fuente real (tras load).
+  const [fuentesTick, setFuentesTick] = useState(0);
+  const firmaFuentesTextos = textosIds
+    .map((id) => {
+      const b = textos[id];
+      return `${id}:${b?.fuente ?? "roboto"}:${b?.peso ?? 400}`;
+    })
+    .join("|");
+  useEffect(() => {
+    let vivo = true;
+    esperarFuentes(
+      textosIds.map((id) => ({
+        fuente: textos[id]?.fuente ?? "roboto",
+        peso: textos[id]?.peso,
+      })),
+    ).then(() => {
+      if (vivo) setFuentesTick((c) => c + 1);
+    });
+    return () => {
+      vivo = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [firmaFuentesTextos]);
 
   // Tamaños naturales de cada foto (para el clamp de cobertura).
   useEffect(() => {
@@ -215,7 +253,7 @@ export default function EditorShell({
         contenido: d?.contenido ?? "",
         tamano: d?.tamano ?? 16,
         color: d?.color ? aHex(d.color) : "#1d1d1b",
-        fuente: "Roboto",
+        fuente: FUENTE_DEFAULT,
       }
     );
   }
@@ -247,6 +285,9 @@ export default function EditorShell({
           tamano: r.tamanoEfectivo,
           color: base.color,
           fuente: base.fuente,
+          // SPEC 2.4 paso 4: el peso viaja al canvas (el default 400 lo pone
+          // el Paso 5; aquí solo se propaga lo que trae el ajuste).
+          peso: base.peso,
           x: pos.x,
           y: pos.y,
           // SPEC 2.1 paso 4: base + rango de la manija.
@@ -262,7 +303,7 @@ export default function EditorShell({
         };
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [firmaTextos, textos, referencias, defectos],
+    [firmaTextos, textos, referencias, defectos, fuentesTick],
   );
 
   /** Cambio de un texto desde su panel (SPEC 2.1). */

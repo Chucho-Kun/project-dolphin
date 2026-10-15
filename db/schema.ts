@@ -75,6 +75,8 @@ export type CustomizationAjusteTexto = {
   alineacion?: "izquierda" | "centro" | "derecha";
   x?: number;
   y?: number;
+  // SPEC 2.4: peso opcional (ausente ⇒ 400; diseños viejos abren en Regular).
+  peso?: 400 | 700;
 };
 
 export type CustomizationAjustes = {

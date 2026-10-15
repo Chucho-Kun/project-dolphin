@@ -7,8 +7,9 @@
 // El slot es el ancho del contenido default al 100 % (lo mide el shell en
 // el SVG vivo): el texto default siempre cabe exacto y uno más largo encoge.
 
-/** Lista fija Google OFL inicial (SPEC 02). Se amplía en otro spec. */
-export const FUENTES_EDITOR = ["Roboto"] as const;
+/** Lista fija Google OFL (SPEC 2.4): reexport del catálogo, sin duplicar. */
+export { FUENTES_EDITOR } from "./fuentes";
+import { resolverFuente } from "./fuentes";
 
 /** Piso del auto-shrink (fracción de la base). REVISABLE. */
 export const PISO_AUTO_SHRINK = 0.6;
@@ -24,6 +25,8 @@ export type AjusteTexto = {
   tamano: number;
   color: string;
   fuente: string;
+  /** SPEC 2.4: peso opcional (ausente ⇒ 400; diseños viejos abren en Regular). */
+  peso?: 400 | 700;
   // SPEC 2.1: opcionales para que los diseños viejos abran sin error.
   x?: number;
   y?: number;
@@ -62,6 +65,54 @@ export type TextoResuelto = {
 
 let lienzoMedida: HTMLCanvasElement | null = null;
 
+/** Peso normalizado (ausente ⇒ 400; diseños viejos abren en Regular). */
+export function normalizarPesoTexto(peso: unknown): 400 | 700 {
+  return peso === 700 ? 700 : 400;
+}
+
+/** Familia CSS desde un id del catálogo (desconocida ⇒ Roboto). */
+export function familiaDeFuente(id: string): string {
+  try {
+    return resolverFuente(id).familia;
+  } catch {
+    return "Roboto";
+  }
+}
+
+/**
+ * Espera a que la familia y peso estén disponibles antes de medir/pintar
+ * (SPEC 2.4 paso 4). Si falla, se mide y pinta con Roboto 400 sin error.
+ */
+export async function esperarFuente(
+  fuenteId: string,
+  peso?: 400 | 700,
+): Promise<void> {
+  if (typeof document === "undefined" || !("fonts" in document)) return;
+  const familia = familiaDeFuente(fuenteId);
+  const p = normalizarPesoTexto(peso);
+  try {
+    await document.fonts.load(`${p} 16px "${familia}"`);
+  } catch {
+    // Fallback silencioso a Roboto 400 (el canvas y el guardado no se rompen).
+  }
+}
+
+/** Espera a un conjunto de familias/pesos (solo los usados, no las 10). */
+export async function esperarFuentes(
+  textos: { fuente: string; peso?: 400 | 700 }[],
+): Promise<void> {
+  const vistos = new Set<string>();
+  const pendientes: Promise<void>[] = [];
+  for (const t of textos) {
+    const p = normalizarPesoTexto(t.peso);
+    const clave = `${t.fuente}:${p}`;
+    if (vistos.has(clave)) continue;
+    vistos.add(clave);
+    pendientes.push(esperarFuente(t.fuente, p));
+  }
+  await Promise.allSettled(pendientes);
+}
+
 /** Ancho en px con canvas 2D. Null en servidor (sin document). */
 export function medirAnchoTexto(
   contenido: string,
@@ -75,7 +126,9 @@ export function medirAnchoTexto(
     lienzoMedida ??= document.createElement("canvas");
     const ctx = lienzoMedida.getContext("2d");
     if (!ctx) return null;
-    ctx.font = `${estilo} ${peso} ${tamano}px ${fuente}, sans-serif`;
+    const familia = familiaDeFuente(fuente);
+    const p = peso === "700" ? "700" : "400";
+    ctx.font = `${estilo} ${p} ${tamano}px "${familia}", Roboto, sans-serif`;
     return ctx.measureText(contenido).width;
   } catch {
     return null;
@@ -96,7 +149,13 @@ export function resolverTexto(
   ajuste: AjusteTexto,
   ref: ReferenciaTexto | null,
   medir: Medidor = (c, t, f) =>
-    medirAnchoTexto(c, t, f, ref?.peso ?? "400", ref?.estilo ?? "normal"),
+    medirAnchoTexto(
+      c,
+      t,
+      f,
+      String(normalizarPesoTexto(ajuste.peso)),
+      ref?.estilo ?? "normal",
+    ),
 ): TextoResuelto {
   // SPEC 2.1: la base la fija el usuario (manija/slider) hasta el 250 %
   // del default; el piso es el 60 % de esa base actual.
