@@ -278,15 +278,42 @@ export async function descargarPdfDelSvg(
   altoMm: number,
   nombre: string,
 ): Promise<void> {
-  const jpeg = await rasterizarSvgAJpeg(svg, anchoMm, altoMm);
+  await descargarPdfDeVariasPaginas([{ svg, anchoMm, altoMm }], nombre);
+}
+
+export type PaginaPdf = {
+  svg: SVGSVGElement;
+  anchoMm: number;
+  altoMm: number;
+};
+
+/**
+ * SPEC 2.5 paso 7: raster por página + `addPage` → PDF único multipágina.
+ * Cada página conserva sus medidas declaradas (carta horizontal 279.4×215.9,
+ * apaisado ya soportado). Raster secuencial por página (tope móvil intacto).
+ * Sin guardar. Lanza Error("raster-fallo") si alguna página falla.
+ */
+export async function descargarPdfDeVariasPaginas(
+  paginas: PaginaPdf[],
+  nombre: string,
+): Promise<void> {
   const { jsPDF } = await import("jspdf");
-  const apaisado = anchoMm > altoMm;
-  const doc = new jsPDF({
-    orientation: apaisado ? "landscape" : "portrait",
-    unit: "mm",
-    format: [anchoMm, altoMm],
-    compress: true,
-  });
-  doc.addImage(jpeg, "JPEG", 0, 0, anchoMm, altoMm);
+  let doc: InstanceType<typeof jsPDF> | null = null;
+  for (const pg of paginas) {
+    const jpeg = await rasterizarSvgAJpeg(pg.svg, pg.anchoMm, pg.altoMm);
+    const apaisado = pg.anchoMm > pg.altoMm;
+    if (!doc) {
+      doc = new jsPDF({
+        orientation: apaisado ? "landscape" : "portrait",
+        unit: "mm",
+        format: [pg.anchoMm, pg.altoMm],
+        compress: true,
+      });
+    } else {
+      doc.addPage([pg.anchoMm, pg.altoMm], apaisado ? "landscape" : "portrait");
+    }
+    doc.addImage(jpeg, "JPEG", 0, 0, pg.anchoMm, pg.altoMm);
+  }
+  if (!doc) throw new Error("raster-fallo");
   doc.save(nombre.endsWith(".pdf") ? nombre : `${nombre}.pdf`);
 }

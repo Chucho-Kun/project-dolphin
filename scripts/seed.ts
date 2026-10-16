@@ -16,7 +16,13 @@ import postgres from "postgres";
 import { drizzle } from "drizzle-orm/postgres-js";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
 import { categories, products } from "../db/schema";
-import { sanitizeSvg, validarContratoSvg } from "../lib/svg";
+import {
+  NormalizacionError,
+  normalizarSvgDisenador,
+  sanitizeSvg,
+  validarContratoSvg,
+  type ConfigPaginaDisenador,
+} from "../lib/svg";
 
 if (!process.env.DATABASE_URL) {
   const envPath = path.resolve(process.cwd(), ".env");
@@ -76,6 +82,7 @@ type ProductSeed = {
   fotoCerradaKey: string;
   fotoAbiertaKey: string;
   plantillaSvgKey: string | null;
+  plantillaSvgKey2?: string | null;
   dificultad: string;
   tiempoMin: number;
   materiales: string;
@@ -230,6 +237,76 @@ async function subirSvgAR2(key: string, svg: string): Promise<void> {
   }
 }
 
+// SPEC 2.5: BOD-001 carta horizontal, 2 páginas (279.4×215.9 mm).
+// Capas amables exactas (sin espacios): "fotos-editables" y "textos".
+const BOD001_PAGINAS: ConfigPaginaDisenador[] = [
+  {
+    archivo: "public/editor/BOD-001/diseno-01.svg",
+    keyR2: "plantillas/BOD-001/diseno-01.svg",
+    anchoMm: 279.4,
+    altoMm: 215.9,
+    capaFotos: "fotos-editables",
+    capaTextos: "textos",
+  },
+  {
+    archivo: "public/editor/BOD-001/diseno-02.svg",
+    keyR2: "plantillas/BOD-001/diseno-02.svg",
+    anchoMm: 279.4,
+    altoMm: 215.9,
+    capaFotos: "fotos-editables",
+    capaTextos: "textos",
+  },
+];
+
+/**
+ * Normaliza → sanitiza → valida una página de diseñador antes de subir.
+ * Página con error no se sube y conserva su key en `null`; el seed continúa.
+ */
+async function procesarPaginaDisenador(
+  config: ConfigPaginaDisenador,
+): Promise<{ key: string | null }> {
+  const ruta = path.resolve(process.cwd(), config.archivo);
+  if (!fs.existsSync(ruta)) {
+    console.warn(
+      `BOD-001 ${config.archivo}: sin archivo — página no subida (key null).`,
+    );
+    return { key: null };
+  }
+  const crudo = fs.readFileSync(ruta, "utf8");
+  let normalizado;
+  try {
+    normalizado = normalizarSvgDisenador(crudo, config);
+  } catch (error) {
+    const detalle = error instanceof Error ? error.message : String(error);
+    if (error instanceof NormalizacionError && error.code === "zona-duplicada") {
+      console.warn(
+        `BOD-001 ${config.archivo}: ERROR zona-duplicada — ${detalle}. El dueño debe borrar la forma duplicada en Illustrator; página no subida (key null).`,
+      );
+    } else {
+      console.warn(
+        `BOD-001 ${config.archivo}: ERROR ${detalle} — página no subida (key null).`,
+      );
+    }
+    return { key: null };
+  }
+  const limpio = sanitizeSvg(normalizado.svg);
+  const contrato = validarContratoSvg(limpio);
+  if (!contrato.ok) {
+    console.warn(
+      `BOD-001 ${config.archivo}: contrato inválido (${contrato.errores.join(",")}) — página no subida (key null).`,
+    );
+    return { key: null };
+  }
+  await subirSvgAR2(config.keyR2, limpio);
+  console.log(
+    `BOD-001 ${config.archivo} → ${config.keyR2}: ` +
+      `${normalizado.zonas.length} zonas (${normalizado.zonas.join(",")}) | ` +
+      `${normalizado.textos.length} textos (${normalizado.textos.join(",")}) | ` +
+      `${normalizado.avisos.join(" | ") || "sin avisos"}`,
+  );
+  return { key: config.keyR2 };
+}
+
 async function main() {
   const client = postgres(DATABASE_URL, { max: 1 });
   const db = drizzle(client);
@@ -238,6 +315,13 @@ async function main() {
   // de referenciarlo desde products.plantilla_svg_key.
   const piloto = leerSvgPiloto();
   await subirSvgAR2(piloto.key, piloto.svg);
+
+  // SPEC 2.5: BOD-001 normaliza sus 2 páginas en ingesta (el dueño no edita
+  // XML). El reporte impreso lista zonas, textos y avisos por página.
+  const bodKeys: (string | null)[] = [];
+  for (const config of BOD001_PAGINAS) {
+    bodKeys.push((await procesarPaginaDisenador(config)).key);
+  }
 
   const categoryIds = new Map<string, number>();
   for (const c of CATEGORIES) {
@@ -264,6 +348,12 @@ async function main() {
   for (const p of PRODUCTS) {
     const categoryId = categoryIds.get(p.categorySlugEs);
     if (!categoryId) throw new Error(`Categoría sin id: ${p.categorySlugEs}`);
+    // SPEC 2.5: BOD-001 toma las keys normalizadas (página con error ⇒ null).
+    const esBod = p.code === "BOD-001";
+    const plantillaSvgKey = esBod ? (bodKeys[0] ?? null) : p.plantillaSvgKey;
+    const plantillaSvgKey2 = esBod
+      ? (bodKeys[1] ?? null)
+      : (p.plantillaSvgKey2 ?? null);
     await db
       .insert(products)
       .values({
@@ -277,7 +367,8 @@ async function main() {
         descripcionEn: p.descripcionEn,
         fotoCerradaKey: p.fotoCerradaKey,
         fotoAbiertaKey: p.fotoAbiertaKey,
-        plantillaSvgKey: p.plantillaSvgKey,
+        plantillaSvgKey,
+        plantillaSvgKey2,
         dificultad: p.dificultad,
         tiempoMin: p.tiempoMin,
         materiales: p.materiales,
@@ -295,7 +386,8 @@ async function main() {
           descripcionEn: p.descripcionEn,
           fotoCerradaKey: p.fotoCerradaKey,
           fotoAbiertaKey: p.fotoAbiertaKey,
-          plantillaSvgKey: p.plantillaSvgKey,
+          plantillaSvgKey,
+          plantillaSvgKey2,
           dificultad: p.dificultad,
           tiempoMin: p.tiempoMin,
           materiales: p.materiales,

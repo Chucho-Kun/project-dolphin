@@ -1,0 +1,1 @@
+ALTER TABLE "products" ADD COLUMN "plantilla_svg_key_2" text;

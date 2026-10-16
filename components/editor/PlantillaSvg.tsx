@@ -110,29 +110,73 @@ function numero(attr: string | null): number {
 }
 
 /**
- * Caja de una zona desde su marcador (primer hijo de forma). Null sin
- * geometría medible. Misma regla para el clip de fotos y para contener
- * textos (SPEC 2.1: el texto vive en la zona que contiene su ancla).
+ * Caja de una zona en espacio del svg raíz (transform-aware, técnica de
+ * `cajaRectEnSvg`). Null sin geometría medible. Es el bbox rectangular:
+ * sirve para defectos, overlay y contorno de selección (UI solamente).
+ * La foto se recorta con la forma real (clip clonado, SPEC 2.5 paso 2).
  */
-function medirCajaZona(g: SVGGElement): CajaZona | null {
+function medirCajaZona(svg: SVGSVGElement, g: SVGGElement): CajaZona | null {
   const forma = Array.from(g.children).find((h) =>
     /^(rect|path|circle|ellipse|polygon)$/i.test(h.tagName),
   ) as SVGElement | undefined;
   if (!forma) return null;
-  if (forma.tagName.toLowerCase() === "rect") {
-    return {
-      x: numero(forma.getAttribute("x")),
-      y: numero(forma.getAttribute("y")),
-      w: numero(forma.getAttribute("width")),
-      h: numero(forma.getAttribute("height")),
-    };
-  }
   try {
-    const b = (forma as SVGGraphicsElement).getBBox();
-    return { x: b.x, y: b.y, w: b.width, h: b.height };
+    let bx = 0;
+    let by = 0;
+    let bw = 0;
+    let bh = 0;
+    if (forma.tagName.toLowerCase() === "rect") {
+      bw = numero(forma.getAttribute("width"));
+      bh = numero(forma.getAttribute("height"));
+      if (!(bw > 0 && bh > 0)) return null;
+      bx = numero(forma.getAttribute("x"));
+      by = numero(forma.getAttribute("y"));
+    } else {
+      const b = (forma as SVGGraphicsElement).getBBox();
+      if (!(b.width > 0 && b.height > 0)) return null;
+      bx = b.x;
+      by = b.y;
+      bw = b.width;
+      bh = b.height;
+    }
+    let pts = [
+      { x: bx, y: by },
+      { x: bx + bw, y: by },
+      { x: bx, y: by + bh },
+      { x: bx + bw, y: by + bh },
+    ];
+    let n: Element | null = forma;
+    while (n && n !== svg) {
+      const mm = (n as SVGGraphicsElement).transform?.baseVal.consolidate()
+        ?.matrix;
+      if (mm) {
+        pts = pts.map((p) => {
+          const q = new DOMPoint(p.x, p.y).matrixTransform(mm);
+          return { x: q.x, y: q.y };
+        });
+      }
+      n = n.parentElement;
+    }
+    const xs = pts.map((p) => p.x);
+    const ys = pts.map((p) => p.y);
+    const minX = Math.min(...xs);
+    const minY = Math.min(...ys);
+    return {
+      x: minX,
+      y: minY,
+      w: Math.max(...xs) - minX,
+      h: Math.max(...ys) - minY,
+    };
   } catch {
     return null;
   }
+}
+
+/** Primer hijo de forma de una zona (el marcador original, para el clip). */
+function formaDeZona(g: SVGGElement): SVGElement | undefined {
+  return Array.from(g.children).find((h) =>
+    /^(rect|path|circle|ellipse|polygon)$/i.test((h as Element).tagName),
+  ) as SVGElement | undefined;
 }
 
 /**
@@ -481,8 +525,10 @@ export default function PlantillaSvg({
       if (ZONA_RE.test(id)) {
         g.style.cursor = "pointer";
 
-        // Geometría: primer hijo de forma; se copia al clip y se oculta el marcador.
-        const caja = medirCajaZona(g);
+        // Geometría transform-aware (bbox rectangular para defectos y
+        // selección); el clip usa la forma real (SPEC 2.5 paso 2).
+        const caja = medirCajaZona(svg, g);
+        const marcador = formaDeZona(g);
         // Oculta el marcador (aporta geometría, no se ve ni se imprime).
         for (const hijo of Array.from(g.children)) {
           if (
@@ -498,19 +544,19 @@ export default function PlantillaSvg({
           cajasDef[id] = { x: caja.x, y: caja.y, w: caja.w, h: caja.h };
         }
 
-        // Clip por zona.
+        // Clip por zona con la forma real (diamantes recortan en diamante).
+        // El contorno de selección sigue siendo el bbox rectangular (UI).
         const clipId = `clip-${id}`;
         defs.querySelector(`#${CSS.escape(clipId)}`)?.remove();
-        if (caja && caja.w > 0 && caja.h > 0) {
+        if (caja && caja.w > 0 && caja.h > 0 && marcador) {
           cajasValidas.current.add(id);
           const clip = document.createElementNS("http://www.w3.org/2000/svg", "clipPath");
           clip.setAttribute("id", clipId);
-          const rect = document.createElementNS("http://www.w3.org/2000/svg", "rect");
-          rect.setAttribute("x", String(caja.x));
-          rect.setAttribute("y", String(caja.y));
-          rect.setAttribute("width", String(caja.w));
-          rect.setAttribute("height", String(caja.h));
-          clip.appendChild(rect);
+          const clon = marcador.cloneNode(false) as SVGElement;
+          clon.removeAttribute("id");
+          clon.removeAttribute("display");
+          clon.style.display = "";
+          clip.appendChild(clon);
           defs.appendChild(clip);
 
           // Foto recortada a la zona (nunca se sale: clip-path).

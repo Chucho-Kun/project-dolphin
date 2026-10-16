@@ -180,6 +180,9 @@
       "errorLimite": "You passed the 20 photos per day limit. Try tomorrow.",
       "errorRed": "Could not save. Check your connection and try again.",
       "errorPdf": "Could not generate the PDF on this device."
+    },
+    "pagina": {
+      "etiqueta": "Page {n}"
     }
   }
 }

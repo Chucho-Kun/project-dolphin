@@ -25,6 +25,12 @@ const COLOR_RE = /^#(?:[0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/;
 // "Roboto" que se normaliza a "roboto"; el resto se rechaza).
 // Alineaciones del SPEC 2.1 (opcionales: los ?t= viejos no las traen).
 const ALINEACIONES = ["izquierda", "centro", "derecha"] as const;
+// SPEC 2.5: página opcional 1|2 (ausente ⇒ 1; los ?t= viejos no la traen).
+const PAGINAS = [1, 2] as const;
+
+function esPagina(v: unknown): boolean {
+  return v === undefined || (PAGINAS as readonly number[]).includes(Number(v));
+}
 
 function esNumero(v: unknown): v is number {
   return typeof v === "number" && Number.isFinite(v);
@@ -37,7 +43,8 @@ function validarImagenes(v: unknown): v is CustomizationImagen[] {
       typeof e === "object" &&
       e !== null &&
       ZONA_RE.test(String((e as { zonaId?: unknown }).zonaId ?? "")) &&
-      R2KEY_RE.test(String((e as { r2Key?: unknown }).r2Key ?? "")),
+      R2KEY_RE.test(String((e as { r2Key?: unknown }).r2Key ?? "")) &&
+      esPagina((e as { pagina?: unknown }).pagina),
   );
 }
 
@@ -51,11 +58,12 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
   if (o.imagenes.length > 20 || o.textos.length > 20) return false;
   const imgsOk = o.imagenes.every((e) => {
     if (typeof e !== "object" || e === null) return false;
-    const r = e as { zonaId?: unknown; x?: unknown; y?: unknown; escala?: unknown };
+    const r = e as { zonaId?: unknown; x?: unknown; y?: unknown; escala?: unknown; pagina?: unknown };
     if (!ZONA_RE.test(String(r.zonaId ?? ""))) return false;
     if (!esNumero(r.x) || !esNumero(r.y) || !esNumero(r.escala)) return false;
     if (Math.abs(r.x) > 10000 || Math.abs(r.y) > 10000) return false;
     if (r.escala < 0.1 || r.escala > 10) return false;
+    if (!esPagina(r.pagina)) return false;
     return true;
   });
   if (!imgsOk) return false;
@@ -71,6 +79,7 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
       alineacion?: unknown;
       x?: unknown;
       y?: unknown;
+      pagina?: unknown;
     };
     if (!TEXTO_RE.test(String(r.id ?? ""))) return false;
     if (typeof r.contenido !== "string" || r.contenido.length > 500) return false;
@@ -92,6 +101,7 @@ function validarAjustes(v: unknown): v is CustomizationAjustes {
     for (const c of [r.x, r.y]) {
       if (c !== undefined && (!esNumero(c) || Math.abs(c) > 10000)) return false;
     }
+    if (!esPagina(r.pagina)) return false;
     return true;
   });
   return textosOk;

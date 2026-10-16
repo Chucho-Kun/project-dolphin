@@ -15,6 +15,13 @@
       "when": 1791929418641,
       "tag": "0001_windy_kinsey_walden",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792189316263,
+      "tag": "0002_busy_killmonger",
+      "breakpoints": true
     }
   ]
 }

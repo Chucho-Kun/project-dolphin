@@ -180,6 +180,9 @@
       "errorLimite": "Pasaste el límite de 20 fotos por día. Intenta mañana.",
       "errorRed": "No se pudo guardar. Revisa tu conexión e intenta de nuevo.",
       "errorPdf": "No se pudo generar el PDF en este dispositivo."
+    },
+    "pagina": {
+      "etiqueta": "Página {n}"
     }
   }
 }

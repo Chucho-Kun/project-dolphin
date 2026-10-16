@@ -45,28 +45,64 @@ async function leerR2(key: string): Promise<string | null> {
   }
 }
 
-function leerLocalRespaldo(code: string): string | null {
-  // Respaldo local del piloto (el seed ya lo subió a R2; si R2 falla, el
-  // editor sigue mostrando el diseño en lugar de romperse).
-  const ruta = path.resolve(
-    process.cwd(),
-    `public/editor/${code}/diseno-piloto.svg`,
-  );
-  try {
-    if (fs.existsSync(ruta)) return fs.readFileSync(ruta, "utf8");
-  } catch {
-    return null;
+function respaldoLocalPara(code: string, pagina: number): string | null {
+  // SPEC 2.5: respaldo local por página. p.1 conserva el piloto legado;
+  // BOD-001 usa diseno-01.svg / diseno-02.svg (el seed ya los subió a R2;
+  // si R2 falla, el editor sigue mostrando el diseño en lugar de romperse).
+  const candidatos =
+    pagina === 2
+      ? [`public/editor/${code}/diseno-02.svg`]
+      : [
+          `public/editor/${code}/diseno-01.svg`,
+          `public/editor/${code}/diseno-piloto.svg`,
+        ];
+  for (const rel of candidatos) {
+    const ruta = path.resolve(process.cwd(), rel);
+    try {
+      if (fs.existsSync(ruta)) return ruta;
+    } catch {
+      continue;
+    }
   }
   return null;
 }
 
-/** Carga y valida el SVG base de la plantilla. Nunca lanza. */
+function leerLocalRespaldo(code: string, pagina = 1): string | null {
+  const ruta = respaldoLocalPara(code, pagina);
+  if (!ruta) return null;
+  try {
+    return fs.readFileSync(ruta, "utf8");
+  } catch {
+    return null;
+  }
+}
+
+/** Carga y valida una página del SVG base. Nunca lanza. */
 export async function cargarPlantillaSvg(
-  product: Pick<Product, "code" | "plantillaSvgKey">,
+  product: Pick<Product, "code" | "plantillaSvgKey" | "plantillaSvgKey2">,
+  pagina: number = 1,
 ): Promise<PlantillaOk | PlantillaAviso> {
-  if (!product.plantillaSvgKey) return { ok: false, motivo: "sin-svg" };
+  const key =
+    pagina === 2 ? product.plantillaSvgKey2 : product.plantillaSvgKey;
+  if (!key) {
+    // Sin key: el respaldo local aún puede mostrar la página (modo local).
+    const local = leerLocalRespaldo(product.code, pagina);
+    if (!local) return { ok: false, motivo: "sin-svg" };
+    const svg = sanitizeSvg(local);
+    const contrato = validarContratoSvg(svg);
+    if (!contrato.medidas) return { ok: false, motivo: "sin-medidas" };
+    if (contrato.zonas.length === 0) return { ok: false, motivo: "sin-zonas" };
+    return {
+      ok: true,
+      svg,
+      anchoMm: contrato.medidas.anchoMm,
+      altoMm: contrato.medidas.altoMm,
+      zonas: contrato.zonas,
+      textos: contrato.textos,
+    };
+  }
   const crudo =
-    (await leerR2(product.plantillaSvgKey)) ?? leerLocalRespaldo(product.code);
+    (await leerR2(key)) ?? leerLocalRespaldo(product.code, pagina);
   if (!crudo) return { ok: false, motivo: "no-disponible" };
   const svg = sanitizeSvg(crudo);
   const contrato = validarContratoSvg(svg);
@@ -82,10 +118,33 @@ export async function cargarPlantillaSvg(
   };
 }
 
+export type PaginaPlantilla = (PlantillaOk | PlantillaAviso) & {
+  pagina: number;
+};
+
+/**
+ * Carga las páginas de la plantilla como array (SPEC 2.5 paso 4).
+ * Cada página valida mm + ≥1 zona por separado. Sin SVG de pág. 2
+ * (ni key ni respaldo local) devuelve solo la pág. 1, sin error.
+ */
+export async function cargarPaginasPlantilla(
+  product: Pick<Product, "code" | "plantillaSvgKey" | "plantillaSvgKey2">,
+): Promise<PaginaPlantilla[]> {
+  const p1 = await cargarPlantillaSvg(product, 1);
+  const paginas: PaginaPlantilla[] = [{ ...p1, pagina: 1 }];
+  const hayP2 =
+    Boolean(product.plantillaSvgKey2) ||
+    respaldoLocalPara(product.code, 2) !== null;
+  if (!hayP2) return paginas;
+  const p2 = await cargarPlantillaSvg(product, 2);
+  paginas.push({ ...p2, pagina: 2 });
+  return paginas;
+}
+
 export type Reapertura = {
   productCode: string;
-  imagenes: { zonaId: string; src: string; r2Key: string }[];
-  ajustesImagenes: { zonaId: string; x: number; y: number; escala: number }[];
+  imagenes: { zonaId: string; src: string; r2Key: string; pagina: number }[];
+  ajustesImagenes: { zonaId: string; x: number; y: number; escala: number; pagina: number }[];
   ajustesTextos: {
     id: string;
     contenido: string;
@@ -98,6 +157,8 @@ export type Reapertura = {
     y?: number;
     // SPEC 2.4: peso opcional (ausente ⇒ 400).
     peso?: 400 | 700;
+    // SPEC 2.5: página normalizada (ausente ⇒ 1; los ?t= viejos abren en p.1).
+    pagina: number;
   }[];
 } | null;
 
@@ -112,6 +173,8 @@ export async function cargarReapertura(token: string): Promise<Reapertura> {
       .limit(1);
     const fila = filas[0];
     if (!fila) return null;
+    // SPEC 2.5: sin migración de datos — `pagina` ausente ⇒ 1 (patrón SPEC 2.1).
+    const paginaDe = (p: unknown): number => (p === 1 || p === 2 ? p : 1);
     return {
       productCode: fila.productCode,
       // Proxy mismo-origen (mitigación CORS del raster): nunca CDN directo.
@@ -119,9 +182,16 @@ export async function cargarReapertura(token: string): Promise<Reapertura> {
         zonaId: e.zonaId,
         src: `/api/r2/${e.r2Key}`,
         r2Key: e.r2Key,
+        pagina: paginaDe(e.pagina),
       })),
-      ajustesImagenes: fila.ajustes.imagenes,
-      ajustesTextos: fila.ajustes.textos,
+      ajustesImagenes: fila.ajustes.imagenes.map((e) => ({
+        ...e,
+        pagina: paginaDe(e.pagina),
+      })),
+      ajustesTextos: fila.ajustes.textos.map((e) => ({
+        ...e,
+        pagina: paginaDe(e.pagina),
+      })),
     };
   } catch {
     return null;

@@ -28,12 +28,19 @@ import {
   FUENTE_DEFAULT,
   normalizarFuente,
 } from "@/lib/fuentes";
-import { descargarPdfDelSvg } from "@/lib/pdf";
+import {
+  descargarPdfDeVariasPaginas,
+  type PaginaPdf,
+} from "@/lib/pdf";
 
 // components/editor/EditorShell.tsx — Layout canvas+paneles (SPEC 02 Paso 7).
 //
 // Guardar: sube pendientes a R2, luego POST (token nuevo + link ?t=) o PUT
 // (last-write-wins). Descargar: PDF directo del SVG visible, sin guardar.
+// SPEC 2.5: multipágina (carta horizontal, 2 páginas). Estado independiente
+// por página (`pagina` viaja en cada item; ausente ⇒ 1), selector 1/2,
+// `svgRef` por página. Guardar serializa ambas páginas: el PUT reemplaza
+// todo, guardar solo la visible borraría la otra.
 
 export type FotoInicial = {
   zonaId: string;
@@ -42,6 +49,8 @@ export type FotoInicial = {
   x: number;
   y: number;
   escala: number;
+  /** SPEC 2.5: página 1|2 (page.tsx ya la reparte). */
+  pagina: number;
 };
 
 export type TextoInicial = {
@@ -50,6 +59,8 @@ export type TextoInicial = {
   tamano: number;
   color: string;
   fuente: string;
+  /** SPEC 2.5: página 1|2 (page.tsx ya la reparte). */
+  pagina: number;
   // SPEC 2.1: opcionales (los ?t= viejos no los traen).
   x?: number;
   y?: number;
@@ -57,14 +68,26 @@ export type TextoInicial = {
   peso?: 400 | 700;
 };
 
-type Props = {
-  productCode: string;
-  locale: string;
-  svgText: string;
+export type PaginaInicial = {
+  pagina: number;
+  /** Null si la página trae aviso (muestra aviso, nunca error). */
+  svgText: string | null;
   anchoMm: number;
   altoMm: number;
   zonas: string[];
   textosIds: string[];
+  motivoAviso:
+    | "sin-svg"
+    | "sin-medidas"
+    | "sin-zonas"
+    | "no-disponible"
+    | null;
+};
+
+type Props = {
+  productCode: string;
+  locale: string;
+  paginas: PaginaInicial[];
   fotosIniciales: FotoInicial[];
   textosIniciales: TextoInicial[];
   tokenInicial: string | null;
@@ -102,28 +125,57 @@ function cargarNatural(src: string): Promise<{ w: number; h: number } | null> {
   });
 }
 
+/** Clave de aviso existente para un motivo (reusa strings, sin claves nuevas). */
+function claveAviso(
+  motivo: NonNullable<PaginaInicial["motivoAviso"]>,
+): "avisoSinSvg" | "avisoSinMedidas" | "avisoSinZonas" | "avisoNoDisponible" {
+  return motivo === "sin-svg"
+    ? "avisoSinSvg"
+    : motivo === "sin-medidas"
+      ? "avisoSinMedidas"
+      : motivo === "sin-zonas"
+        ? "avisoSinZonas"
+        : "avisoNoDisponible";
+}
+
 export default function EditorShell({
   productCode,
   locale,
-  svgText,
-  anchoMm,
-  altoMm,
-  zonas,
-  textosIds,
+  paginas,
   fotosIniciales,
   textosIniciales,
   tokenInicial,
 }: Props) {
   const t = useTranslations("editor");
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  // SPEC 2.5: un svgRef por página (objetos estables entre renders; el PDF
+  // los lee en el clic, nunca durante el render).
+  const [svgRefPorPagina] = useState<
+    Record<number, { current: SVGSVGElement | null }>
+  >(() => {
+    const base: Record<number, { current: SVGSVGElement | null }> = {};
+    for (const p of paginas) base[p.pagina] = { current: null };
+    return base;
+  });
   // SPEC 2.2 paso 4: foco del diálogo (al abrir → ×; Escape → canvas).
   const cerrarRef = useRef<HTMLButtonElement | null>(null);
   const lienzoRef = useRef<HTMLDivElement | null>(null);
 
-  const [fotos, setFotos] = useState<Record<string, FotoEstado>>(() => {
-    const base: Record<string, FotoEstado> = {};
+  // SPEC 2.5: página visible (1|2). Al cambiar se limpia la selección.
+  const [paginaActual, setPaginaActual] = useState<number>(
+    paginas[0]?.pagina ?? 1,
+  );
+  const datosActual: PaginaInicial | undefined = paginas.find(
+    (p) => p.pagina === paginaActual,
+  );
+  const textosIdsActuales = datosActual?.textosIds ?? [];
+
+  const [fotosPorPagina, setFotosPorPagina] = useState<
+    Record<number, Record<string, FotoEstado>>
+  >(() => {
+    const base: Record<number, Record<string, FotoEstado>> = {};
     for (const f of fotosIniciales) {
-      base[f.zonaId] = {
+      if (!base[f.pagina]) base[f.pagina] = {};
+      base[f.pagina][f.zonaId] = {
         src: f.src,
         file: null,
         r2Key: f.r2Key,
@@ -132,8 +184,10 @@ export default function EditorShell({
     }
     return base;
   });
-  const [textos, setTextos] = useState<Record<string, AjusteTexto>>(() => {
-    const base: Record<string, AjusteTexto> = {};
+  const [textosPorPagina, setTextosPorPagina] = useState<
+    Record<number, Record<string, AjusteTexto>>
+  >(() => {
+    const base: Record<number, Record<string, AjusteTexto>> = {};
     for (const tx of textosIniciales) {
       // SPEC 2.4 paso 5: alias legado "Roboto" → "roboto"; desconocida o
       // ausente ⇒ "roboto"; peso ausente ⇒ 400 (se omite, el default manda).
@@ -141,7 +195,8 @@ export default function EditorShell({
         typeof tx.fuente === "string" && esFuenteValida(tx.fuente)
           ? normalizarFuente(tx.fuente)
           : FUENTE_DEFAULT;
-      base[tx.id] = {
+      if (!base[tx.pagina]) base[tx.pagina] = {};
+      base[tx.pagina][tx.id] = {
         contenido: tx.contenido,
         tamano: tx.tamano,
         color: tx.color,
@@ -154,12 +209,21 @@ export default function EditorShell({
     }
     return base;
   });
-  const [defectos, setDefectos] = useState<DefectosPlantilla | null>(null);
+  // Estado de la página visible (el resto se conserva intacto en memoria).
+  const fotos = fotosPorPagina[paginaActual] ?? {};
+  const textos = textosPorPagina[paginaActual] ?? {};
+  const [defectosPorPagina, setDefectosPorPagina] = useState<
+    Record<number, DefectosPlantilla | null>
+  >({});
+  const defectos = defectosPorPagina[paginaActual] ?? null;
   // SPEC 2.2: sin selección inicial; el hint manda hasta el primer toque.
   const [zonaSeleccionada, setZonaSeleccionada] = useState<string | null>(null);
   // SPEC 2.1 paso 3: texto seleccionado en el canvas (contorno + gestos).
   const [textoSeleccionado, setTextoSeleccionado] = useState<string | null>(null);
-  const [naturales, setNaturales] = useState<Record<string, { w: number; h: number }>>({});
+  const [naturalesPorPagina, setNaturalesPorPagina] = useState<
+    Record<number, Record<string, { w: number; h: number }>>
+  >({});
+  const naturales = naturalesPorPagina[paginaActual] ?? {};
   const [token, setToken] = useState<string | null>(tokenInicial);
   const [guardando, setGuardando] = useState(false);
   const [descargando, setDescargando] = useState(false);
@@ -174,7 +238,7 @@ export default function EditorShell({
   } | null>(null);
   // SPEC 2.4 paso 4: remide el auto-shrink con la fuente real (tras load).
   const [fuentesTick, setFuentesTick] = useState(0);
-  const firmaFuentesTextos = textosIds
+  const firmaFuentesTextos = textosIdsActuales
     .map((id) => {
       const b = textos[id];
       return `${id}:${b?.fuente ?? "roboto"}:${b?.peso ?? 400}`;
@@ -183,7 +247,7 @@ export default function EditorShell({
   useEffect(() => {
     let vivo = true;
     esperarFuentes(
-      textosIds.map((id) => ({
+      textosIdsActuales.map((id) => ({
         fuente: textos[id]?.fuente ?? "roboto",
         peso: textos[id]?.peso,
       })),
@@ -203,7 +267,14 @@ export default function EditorShell({
       if (naturales[zid] || !f.src) continue;
       cargarNatural(f.src).then((tam) => {
         if (vivo && tam && tam.w > 0) {
-          setNaturales((prev) => (prev[zid] ? prev : { ...prev, [zid]: tam }));
+          setNaturalesPorPagina((prev) => {
+            const dePagina = prev[paginaActual] ?? {};
+            if (dePagina[zid]) return prev;
+            return {
+              ...prev,
+              [paginaActual]: { ...dePagina, [zid]: tam },
+            };
+          });
         }
       });
     }
@@ -211,125 +282,206 @@ export default function EditorShell({
       vivo = false;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [Object.values(fotos).map((f) => f.src).join("|")]);
+  }, [paginaActual, Object.values(fotos).map((f) => f.src).join("|")]);
 
-  // Revoca objectURLs al reemplazar o desmontar.
-  const fotosRef = useRef(fotos);
+  // Revoca objectURLs al reemplazar o desmontar (todas las páginas).
+  const fotosRef = useRef(fotosPorPagina);
   useEffect(() => {
-    fotosRef.current = fotos;
+    fotosRef.current = fotosPorPagina;
   });
   useEffect(() => {
     return () => {
-      for (const f of Object.values(fotosRef.current)) {
-        if (f.src.startsWith("blob:")) {
-          try {
-            URL.revokeObjectURL(f.src);
-          } catch {
-            /* noop */
+      for (const porZona of Object.values(fotosRef.current)) {
+        for (const f of Object.values(porZona)) {
+          if (f.src.startsWith("blob:")) {
+            try {
+              URL.revokeObjectURL(f.src);
+            } catch {
+              /* noop */
+            }
           }
         }
       }
     };
   }, []);
 
-  const referencias: Record<string, ReferenciaTexto> = useMemo(() => {
-    const base: Record<string, ReferenciaTexto> = {};
-    if (!defectos) return base;
-    for (const [id, d] of Object.entries(defectos.textos)) {
-      base[id] = {
-        tamanoDefault: d.tamano,
-        anchoSlot: d.ancho,
-        peso: d.peso,
-        estilo: d.estilo,
-      };
-    }
-    return base;
-  }, [defectos]);
-
-  function textoBase(id: string): AjusteTexto {
-    const d = defectos?.textos[id];
+  function textoBasePara(pagina: number, id: string): AjusteTexto {
+    const ajustados = textosPorPagina[pagina] ?? {};
+    const medido = defectosPorPagina[pagina]?.textos[id];
     return (
-      textos[id] ?? {
-        contenido: d?.contenido ?? "",
-        tamano: d?.tamano ?? 16,
-        color: d?.color ? aHex(d.color) : "#1d1d1b",
+      ajustados[id] ?? {
+        contenido: medido?.contenido ?? "",
+        tamano: medido?.tamano ?? 16,
+        color: medido?.color ? aHex(medido.color) : "#1d1d1b",
         fuente: FUENTE_DEFAULT,
       }
     );
   }
+  function textoBase(id: string): AjusteTexto {
+    return textoBasePara(paginaActual, id);
+  }
 
-  // Lo que pinta el canvas: fotos + textos ya resueltos (shrink aplicado).
-  const imagenesCanvas: ImagenEnZona[] = useMemo(
-    () =>
-      Object.entries(fotos).map(([zonaId, f]) => ({
-        zonaId,
-        src: f.src,
-        x: f.ajuste.x,
-        y: f.ajuste.y,
-        escala: f.ajuste.escala,
-      })),
-    [fotos],
-  );
-  const firmaTextos = textosIds.join("|");
-  const textosCanvas: TextoEnPlantilla[] = useMemo(
-    () =>
-      textosIds.map((id) => {
-        const base = textoBase(id);
-        const ref = referencias[id] ?? null;
-        const r = resolverTexto(base, ref);
-        const pos = normalizarPosicionTexto(base);
-        const tamDefault = ref?.tamanoDefault ?? null;
-        return {
-          id,
-          contenido: r.mostrado,
-          tamano: r.tamanoEfectivo,
-          color: base.color,
-          fuente: base.fuente,
-          // SPEC 2.4 paso 4: el peso viaja al canvas (el default 400 lo pone
-          // el Paso 5; aquí solo se propaga lo que trae el ajuste).
-          peso: base.peso,
-          x: pos.x,
-          y: pos.y,
-          // SPEC 2.1 paso 4: base + rango de la manija.
-          tamanoBase: base.tamano,
-          minTamano:
-            tamDefault != null && tamDefault > 0
-              ? Math.round(PISO_AUTO_SHRINK * tamDefault)
-              : undefined,
-          maxTamano:
-            tamDefault != null && tamDefault > 0
-              ? Math.round(TECHO_ESCALA_TEXTO * tamDefault)
-              : undefined,
-        };
-      }),
+  // Lo que pinta cada canvas: fotos + textos ya resueltos (shrink aplicado).
+  // SPEC 2.5: por página (la oculta también pinta: el PDF la rasteriza).
+  // fuentesTick fuerza re-resolver con la métrica real tras cargar fuentes
+  // (SPEC 2.4 paso 4); no se lee en el cuerpo a propósito.
+  const canvasPorPagina: Record<
+    number,
+    {
+      imagenes: ImagenEnZona[];
+      textos: TextoEnPlantilla[];
+      referencias: Record<string, ReferenciaTexto>;
+    }
+  > =
+    useMemo(() => {
+    const salida: Record<
+      number,
+      {
+        imagenes: ImagenEnZona[];
+        textos: TextoEnPlantilla[];
+        referencias: Record<string, ReferenciaTexto>;
+      }
+    > = {};
+    for (const pg of paginas) {
+      if (pg.motivoAviso) continue;
+      const defs = defectosPorPagina[pg.pagina] ?? null;
+      const fts = fotosPorPagina[pg.pagina] ?? {};
+      const txs = textosPorPagina[pg.pagina] ?? {};
+      const refs: Record<string, ReferenciaTexto> = {};
+      if (defs) {
+        for (const [id, d] of Object.entries(defs.textos)) {
+          refs[id] = {
+            tamanoDefault: d.tamano,
+            anchoSlot: d.ancho,
+            peso: d.peso,
+            estilo: d.estilo,
+          };
+        }
+      }
+      const basePara = (id: string): AjusteTexto => {
+        const medido = defs?.textos[id];
+        return (
+          txs[id] ?? {
+            contenido: medido?.contenido ?? "",
+            tamano: medido?.tamano ?? 16,
+            color: medido?.color ? aHex(medido.color) : "#1d1d1b",
+            fuente: FUENTE_DEFAULT,
+          }
+        );
+      };
+      salida[pg.pagina] = {
+        imagenes: Object.entries(fts).map(([zonaId, f]) => ({
+          zonaId,
+          src: f.src,
+          x: f.ajuste.x,
+          y: f.ajuste.y,
+          escala: f.ajuste.escala,
+        })),
+        textos: pg.textosIds.map((id) => {
+          const base = basePara(id);
+          const ref = refs[id] ?? null;
+          const r = resolverTexto(base, ref);
+          const pos = normalizarPosicionTexto(base);
+          const tamDefault = ref?.tamanoDefault ?? null;
+          return {
+            id,
+            contenido: r.mostrado,
+            tamano: r.tamanoEfectivo,
+            color: base.color,
+            fuente: base.fuente,
+            // SPEC 2.4 paso 4: el peso viaja al canvas (el default 400 lo
+            // pone el Paso 5; aquí solo se propaga lo que trae el ajuste).
+            peso: base.peso,
+            x: pos.x,
+            y: pos.y,
+            // SPEC 2.1 paso 4: base + rango de la manija.
+            tamanoBase: base.tamano,
+            minTamano:
+              tamDefault != null && tamDefault > 0
+                ? Math.round(PISO_AUTO_SHRINK * tamDefault)
+                : undefined,
+            maxTamano:
+              tamDefault != null && tamDefault > 0
+                ? Math.round(TECHO_ESCALA_TEXTO * tamDefault)
+                : undefined,
+          };
+        }),
+        referencias: refs,
+      };
+    }
+    return salida;
+    // fuentesTick no se lee en el cuerpo: fuerza re-resolver con la métrica
+    // real tras cargar fuentes (SPEC 2.4 paso 4).
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [firmaTextos, textos, referencias, defectos, fuentesTick],
-  );
+  }, [
+    paginas,
+    fotosPorPagina,
+    textosPorPagina,
+    defectosPorPagina,
+    fuentesTick,
+  ]);
+
+  const imagenesCanvas = canvasPorPagina[paginaActual]?.imagenes ?? [];
+  const textosCanvas = canvasPorPagina[paginaActual]?.textos ?? [];
+  const referencias = canvasPorPagina[paginaActual]?.referencias ?? {};
+
+  function imagenesCanvasPara(pagina: number): ImagenEnZona[] {
+    return canvasPorPagina[pagina]?.imagenes ?? [];
+  }
+
+  function textosCanvasPara(pagina: number): TextoEnPlantilla[] {
+    return canvasPorPagina[pagina]?.textos ?? [];
+  }
+
+  /** Handler de defectos con página explícita (no depende del visible). */
+  function crearDefectosHandler(pagina: number) {
+    return (d: DefectosPlantilla) =>
+      setDefectosPorPagina((prev) => {
+        if (prev[pagina] === d) return prev;
+        return { ...prev, [pagina]: d };
+      });
+  }
+
+  /** SPEC 2.5: cambiar de página limpia la selección (no cruza de página). */
+  function cambiarPagina(pagina: number) {
+    if (pagina === paginaActual) return;
+    setPaginaActual(pagina);
+    setZonaSeleccionada(null);
+    setTextoSeleccionado(null);
+    setFalloDrop(null);
+  }
 
   /** Cambio de un texto desde su panel (SPEC 2.1). */
   function cambiarTexto(id: string, parcial: Partial<AjusteTexto>) {
     const final: AjusteTexto = { ...textoBase(id), ...parcial };
-    setTextos((prev) => ({ ...prev, [id]: final }));
+    setTextosPorPagina((prev) => ({
+      ...prev,
+      [paginaActual]: { ...(prev[paginaActual] ?? {}), [id]: final },
+    }));
   }
 
   function cambiarAjuste(zonaId: string, ajuste: AjusteImagen) {
-    setFotos((prev) => {
-      const f = prev[zonaId];
+    setFotosPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      const f = dePagina[zonaId];
       if (!f) return prev;
       return {
         ...prev,
-        [zonaId]: {
-          ...f,
-          ajuste: limitarAjuste(
-            ajuste,
-            naturales[zonaId] ?? null,
-            defectos?.cajas[zonaId]
-              ? {
-                  w: defectos.cajas[zonaId].w,
-                  h: defectos.cajas[zonaId].h,
-                }
-              : null,
-          ),
+        [paginaActual]: {
+          ...dePagina,
+          [zonaId]: {
+            ...f,
+            ajuste: limitarAjuste(
+              ajuste,
+              naturales[zonaId] ?? null,
+              defectos?.cajas[zonaId]
+                ? {
+                    w: defectos.cajas[zonaId].w,
+                    h: defectos.cajas[zonaId].h,
+                  }
+                : null,
+            ),
+          },
         },
       };
     });
@@ -356,10 +508,17 @@ export default function EditorShell({
     // Base del render actual; el updater acumula aunque React no haya
     // pintado entre gestos (prev gana si ya existe).
     const base = textoBase(id);
-    setTextos((prev) => {
-      const actual = prev[id] ?? base;
+    setTextosPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      const actual = dePagina[id] ?? base;
       const pos = normalizarPosicionTexto(actual);
-      return { ...prev, [id]: { ...actual, x: pos.x + dx, y: pos.y + dy } };
+      return {
+        ...prev,
+        [paginaActual]: {
+          ...dePagina,
+          [id]: { ...actual, x: pos.x + dx, y: pos.y + dy },
+        },
+      };
     });
   }
 
@@ -377,18 +536,27 @@ export default function EditorShell({
       }
     }
     const src = URL.createObjectURL(file);
-    setFotos((prev) => ({
-      ...prev,
-      [zonaId]: {
-        src,
-        file,
-        r2Key: prev[zonaId]?.r2Key ?? null,
-        ajuste: { ...AJUSTE_CENTRADO },
-      },
-    }));
+    setFotosPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      return {
+        ...prev,
+        [paginaActual]: {
+          ...dePagina,
+          [zonaId]: {
+            src,
+            file,
+            r2Key: dePagina[zonaId]?.r2Key ?? null,
+            ajuste: { ...AJUSTE_CENTRADO },
+          },
+        },
+      };
+    });
     cargarNatural(src).then((tam) => {
       if (tam && tam.w > 0) {
-        setNaturales((prev) => ({ ...prev, [zonaId]: tam }));
+        setNaturalesPorPagina((prev) => ({
+          ...prev,
+          [paginaActual]: { ...(prev[paginaActual] ?? {}), [zonaId]: tam },
+        }));
       }
     });
   }
@@ -422,17 +590,19 @@ export default function EditorShell({
         /* noop */
       }
     }
-    setFotos((prev) => {
-      if (!prev[zonaId]) return prev;
-      const siguiente = { ...prev };
+    setFotosPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      if (!dePagina[zonaId]) return prev;
+      const siguiente = { ...dePagina };
       delete siguiente[zonaId];
-      return siguiente;
+      return { ...prev, [paginaActual]: siguiente };
     });
-    setNaturales((prev) => {
-      if (!prev[zonaId]) return prev;
-      const siguiente = { ...prev };
+    setNaturalesPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      if (!dePagina[zonaId]) return prev;
+      const siguiente = { ...dePagina };
       delete siguiente[zonaId];
-      return siguiente;
+      return { ...prev, [paginaActual]: siguiente };
     });
     setZonaSeleccionada(zonaId);
     setTextoSeleccionado(null);
@@ -442,14 +612,15 @@ export default function EditorShell({
   /** SPEC 2.1 paso 5: vuelve a x=0, y=0 y base del SVG. */
   function restablecerTexto(id: string) {
     const d = defectos?.textos[id];
-    setTextos((prev) => {
-      const actual = prev[id];
+    setTextosPorPagina((prev) => {
+      const dePagina = prev[paginaActual] ?? {};
+      const actual = dePagina[id];
       if (!actual) return prev;
       const siguiente: AjusteTexto = { ...actual };
       delete siguiente.x;
       delete siguiente.y;
       if (d && d.tamano > 0) siguiente.tamano = d.tamano;
-      return { ...prev, [id]: siguiente };
+      return { ...prev, [paginaActual]: { ...dePagina, [id]: siguiente } };
     });
   }
 
@@ -469,51 +640,82 @@ export default function EditorShell({
     setCopiado(false);
     setGuardando(true);
     try {
-      // 1. Sube a R2 solo las fotos nuevas (las guardadas conservan su key).
-      const imagenesPayload: { zonaId: string; r2Key: string }[] = [];
-      const fotosTrasSubida: Record<string, FotoEstado> = { ...fotos };
-      for (const zid of zonas) {
-        const f = fotos[zid];
-        if (!f) continue;
-        let r2Key = f.r2Key;
-        if (f.file) {
-          const forma = new FormData();
-          forma.append("file", f.file);
-          forma.append("productCode", productCode);
-          forma.append("zonaId", zid);
-          const res = await fetch("/api/uploads", { method: "POST", body: forma });
-          if (res.status === 429) throw new Error("limite");
-          if (!res.ok) throw new Error("red");
-          const datos = (await res.json()) as { key: string };
-          r2Key = datos.key;
-          if (f.src.startsWith("blob:")) {
-            try {
-              URL.revokeObjectURL(f.src);
-            } catch {
-              /* noop */
+      // SPEC 2.5: serializa ambas páginas (el PUT last-write-wins reemplaza
+      // todo: guardar solo la visible borraría la otra). `uploads` sin
+      // cambios: la key con UUID ya es única entre páginas.
+      const imagenesPayload: {
+        zonaId: string;
+        r2Key: string;
+        pagina: number;
+      }[] = [];
+      const fotosTrasSubida: Record<number, Record<string, FotoEstado>> = {
+        ...fotosPorPagina,
+      };
+      for (const pg of paginas) {
+        if (pg.motivoAviso) continue;
+        const estadoFotos = { ...(fotosTrasSubida[pg.pagina] ?? {}) };
+        for (const zid of pg.zonas) {
+          const f = estadoFotos[zid];
+          if (!f) continue;
+          let r2Key = f.r2Key;
+          if (f.file) {
+            const forma = new FormData();
+            forma.append("file", f.file);
+            forma.append("productCode", productCode);
+            forma.append("zonaId", zid);
+            const res = await fetch("/api/uploads", {
+              method: "POST",
+              body: forma,
+            });
+            if (res.status === 429) throw new Error("limite");
+            if (!res.ok) throw new Error("red");
+            const datos = (await res.json()) as { key: string };
+            r2Key = datos.key;
+            if (f.src.startsWith("blob:")) {
+              try {
+                URL.revokeObjectURL(f.src);
+              } catch {
+                /* noop */
+              }
             }
+            estadoFotos[zid] = {
+              src: `/api/r2/${r2Key}`,
+              file: null,
+              r2Key,
+              ajuste: f.ajuste,
+            };
           }
-          fotosTrasSubida[zid] = {
-            src: `/api/r2/${r2Key}`,
-            file: null,
-            r2Key,
-            ajuste: f.ajuste,
-          };
+          if (r2Key) imagenesPayload.push({ zonaId: zid, r2Key, pagina: pg.pagina });
         }
-        if (r2Key) imagenesPayload.push({ zonaId: zid, r2Key });
+        fotosTrasSubida[pg.pagina] = estadoFotos;
       }
-      // 2. Guarda ajustes (last-write-wins por token).
+      // 2. Guarda ajustes (last-write-wins por token, ambas páginas).
       const cuerpo = {
         productCode,
         imagenes: imagenesPayload,
         ajustes: {
-          imagenes: Object.entries(fotosTrasSubida).map(([zonaId, f]) => ({
-            zonaId,
-            x: f.ajuste.x,
-            y: f.ajuste.y,
-            escala: f.ajuste.escala,
-          })),
-          textos: textosIds.map((id) => ({ id, ...textoBase(id) })),
+          imagenes: paginas.flatMap((pg) =>
+            pg.motivoAviso
+              ? []
+              : Object.entries(fotosTrasSubida[pg.pagina] ?? {}).map(
+                  ([zonaId, f]) => ({
+                    zonaId,
+                    x: f.ajuste.x,
+                    y: f.ajuste.y,
+                    escala: f.ajuste.escala,
+                    pagina: pg.pagina,
+                  }),
+                ),
+          ),
+          textos: paginas.flatMap((pg) =>
+            pg.motivoAviso
+              ? []
+              : pg.textosIds.map((id) => ({
+                  id,
+                  ...textoBasePara(pg.pagina, id),
+                  pagina: pg.pagina,
+                })),
+          ),
         },
       };
       let tok = token;
@@ -544,7 +746,7 @@ export default function EditorShell({
           /* noop */
         }
       }
-      setFotos(fotosTrasSubida);
+      setFotosPorPagina(fotosTrasSubida);
     } catch (e) {
       setError(e instanceof Error && e.message === "limite" ? "errorLimite" : "errorRed");
     } finally {
@@ -554,14 +756,25 @@ export default function EditorShell({
 
   async function descargar() {
     setError(null);
-    const svg = svgRef.current;
-    if (!svg) {
+    // SPEC 2.5 paso 7: PDF único con todas las páginas (cada una con sus
+    // medidas declaradas). Solo páginas cargadas (sin aviso).
+    const paraPdf: PaginaPdf[] = [];
+    for (const pg of paginas) {
+      if (pg.motivoAviso || !pg.svgText) continue;
+      const svg = svgRefPorPagina[pg.pagina]?.current;
+      if (!svg) {
+        setError("errorPdf");
+        return;
+      }
+      paraPdf.push({ svg, anchoMm: pg.anchoMm, altoMm: pg.altoMm });
+    }
+    if (paraPdf.length === 0) {
       setError("errorPdf");
       return;
     }
     setDescargando(true);
     try {
-      await descargarPdfDelSvg(svg, anchoMm, altoMm, `${productCode}.pdf`);
+      await descargarPdfDeVariasPaginas(paraPdf, `${productCode}.pdf`);
     } catch {
       setError("errorPdf");
     } finally {
@@ -578,7 +791,16 @@ export default function EditorShell({
     }
   }
 
-  const listo = defectos != null;
+  // SPEC 2.5: Guardar serializa ambas páginas, así que espera a medirlas
+  // todas (sin medir, los textos caerían al tamano fallback de 16).
+  const listo =
+    !datosActual?.motivoAviso &&
+    paginas
+      .filter((p) => !p.motivoAviso)
+      .every((p) => defectosPorPagina[p.pagina] != null);
+  // Una página con aviso no se serializa: si el servidor guardara datos de
+  // ella, el PUT los borraría. Se bloquea Guardar hasta que cargue.
+  const algunaAviso = paginas.some((p) => p.motivoAviso);
   const enlace = token ? `/${locale}/editor/${productCode}?t=${token}` : null;
   // SPEC 2.2: el flotante solo refleja la selección del canvas.
   const areaVisible: string | null = textoSeleccionado ?? zonaSeleccionada;
@@ -628,7 +850,7 @@ export default function EditorShell({
       <button
         type="button"
         onClick={guardar}
-        disabled={guardando || !listo}
+        disabled={guardando || !listo || algunaAviso}
         className="rounded bg-black px-4 py-2.5 font-bold text-white hover:bg-neutral-800 disabled:opacity-50"
       >
         {t(guardando ? "shell.guardando" : "shell.guardar")}
@@ -670,34 +892,100 @@ export default function EditorShell({
       <div className="sticky top-0 z-30 bg-white/95 py-2 backdrop-blur">
         {acciones}
       </div>
-      <div ref={lienzoRef} tabIndex={-1} className="min-w-0 outline-none">
-        <PlantillaSvg
-          svgText={svgText}
-          imagenes={imagenesCanvas}
-          textos={textosCanvas}
-          zonaSeleccionada={zonaSeleccionada}
-          onSeleccionarZona={(z) => {
-            // SPEC 2.2: elegir un área sustituye el panel (exclusión mutua).
-            setZonaSeleccionada(z);
-            setTextoSeleccionado(null);
-            // SPEC 2.3 paso 3: cambiar de selección limpia el error del drop.
-            setFalloDrop(null);
-          }}
-          onArrastrarZona={alArrastrarZona}
-          textoSeleccionado={textoSeleccionado}
-          onSeleccionarTexto={(id) => {
-            setTextoSeleccionado(id);
-            if (id != null) setZonaSeleccionada(null);
-            // SPEC 2.3 paso 3: cambiar de selección limpia el error del drop.
-            setFalloDrop(null);
-          }}
-          onDeseleccionar={cerrarPanel}
-          onArrastrarTexto={alArrastrarTexto}
-          onEscalarTexto={alEscalarTexto}
-          onArchivoExterno={alArchivoExterno}
-          onDefectos={setDefectos}
-          svgRef={svgRef}
-        />
+      {/* SPEC 2.5: selector de página (solo si hay 2; etiqueta en el Paso 8). */}
+      {paginas.length > 1 ? (
+        <div className="flex flex-wrap gap-2">
+          {paginas.map((pg) => (
+            <button
+              key={pg.pagina}
+              type="button"
+              onClick={() => cambiarPagina(pg.pagina)}
+              aria-pressed={pg.pagina === paginaActual}
+              className={
+                pg.pagina === paginaActual
+                  ? "rounded bg-black px-4 py-2 text-sm font-bold text-white"
+                  : "rounded border border-neutral-300 bg-white px-4 py-2 text-sm font-bold hover:bg-neutral-50"
+              }
+            >
+              {t("pagina.etiqueta", { n: pg.pagina })}
+            </button>
+          ))}
+        </div>
+      ) : null}
+      <div
+        ref={lienzoRef}
+        tabIndex={-1}
+        className="relative min-w-0 outline-none"
+      >
+        {/* SPEC 2.5: ambas páginas montadas (cada una con su svgRef para el
+            PDF del Paso 7). La inactiva va invisible pero con layout: con
+            display:none no mediría (getBBox) ni rasterizaría. */}
+        {paginas.map((pg) =>
+          pg.motivoAviso ? (
+            pg.pagina === paginaActual ? (
+              <p
+                key={pg.pagina}
+                role="status"
+                className="rounded bg-amber-100 px-3 py-2 text-sm"
+              >
+                {t(`${claveAviso(pg.motivoAviso)}Titulo`)} —{" "}
+                {t(`${claveAviso(pg.motivoAviso)}Desc`, {
+                  code: productCode,
+                })}
+              </p>
+            ) : null
+          ) : pg.svgText ? (
+            <div
+              key={pg.pagina}
+              aria-hidden={pg.pagina !== paginaActual}
+              className={
+                pg.pagina === paginaActual
+                  ? "min-w-0"
+                  : "invisible absolute top-0 left-0 -z-10 h-0 w-full overflow-hidden"
+              }
+            >
+              <PlantillaSvg
+                svgText={pg.svgText}
+                imagenes={
+                  pg.pagina === paginaActual
+                    ? imagenesCanvas
+                    : imagenesCanvasPara(pg.pagina)
+                }
+                textos={
+                  pg.pagina === paginaActual
+                    ? textosCanvas
+                    : textosCanvasPara(pg.pagina)
+                }
+                zonaSeleccionada={
+                  pg.pagina === paginaActual ? zonaSeleccionada : null
+                }
+                onSeleccionarZona={(z) => {
+                  // SPEC 2.2: elegir un área sustituye el panel.
+                  setZonaSeleccionada(z);
+                  setTextoSeleccionado(null);
+                  // SPEC 2.3 paso 3: cambiar de selección limpia el drop.
+                  setFalloDrop(null);
+                }}
+                onArrastrarZona={alArrastrarZona}
+                textoSeleccionado={
+                  pg.pagina === paginaActual ? textoSeleccionado : null
+                }
+                onSeleccionarTexto={(id) => {
+                  setTextoSeleccionado(id);
+                  if (id != null) setZonaSeleccionada(null);
+                  // SPEC 2.3 paso 3: cambiar de selección limpia el drop.
+                  setFalloDrop(null);
+                }}
+                onDeseleccionar={cerrarPanel}
+                onArrastrarTexto={alArrastrarTexto}
+                onEscalarTexto={alEscalarTexto}
+                onArchivoExterno={alArchivoExterno}
+                onDefectos={crearDefectosHandler(pg.pagina)}
+                svgRef={svgRefPorPagina[pg.pagina]}
+              />
+            </div>
+          ) : null,
+        )}
       </div>
 
       {/* SPEC 2.2 paso 2: sin selección, hint; con selección, flotante. */}
@@ -724,7 +1012,7 @@ export default function EditorShell({
           </div>
           {textoSeleccionado != null ? (
             <PanelTexto
-              key={textoSeleccionado}
+              key={`${paginaActual}:${textoSeleccionado}`}
               textoId={textoSeleccionado}
               ajuste={textoBase(textoSeleccionado)}
               referencia={referencias[textoSeleccionado] ?? null}
@@ -733,7 +1021,7 @@ export default function EditorShell({
             />
           ) : zonaSeleccionada != null ? (
             <PanelImagen
-              key={zonaSeleccionada}
+              key={`${paginaActual}:${zonaSeleccionada}`}
               zonaId={zonaSeleccionada}
               src={fotos[zonaSeleccionada]?.src ?? null}
               ajuste={fotos[zonaSeleccionada]?.ajuste ?? { ...AJUSTE_CENTRADO }}

@@ -17,8 +17,15 @@ import { Link } from "@/i18n/navigation";
 import { getDb } from "@/lib/db";
 import { products, type Product } from "@/db/schema";
 import type { Locale } from "@/i18n/routing";
-import EditorShell from "@/components/editor/EditorShell";
-import { cargarPlantillaSvg, cargarReapertura } from "@/lib/plantilla";
+import EditorShell, {
+  type FotoInicial,
+  type PaginaInicial,
+  type TextoInicial,
+} from "@/components/editor/EditorShell";
+import {
+  cargarPaginasPlantilla,
+  cargarReapertura,
+} from "@/lib/plantilla";
 
 // SPEC 02 Paso 7: la página entrega datos al shell (canvas + paneles).
 // Sin SVG configurado, o con SVG sin medidas físicas, muestra aviso visible,
@@ -164,14 +171,16 @@ export default async function EditorPage({
   const volverHref = `/templates/${slug}`;
   const title = isEs ? product.tituloEs : product.tituloEn;
 
-  const plantilla = await cargarPlantillaSvg(product);
-  if (!plantilla.ok) {
+  // SPEC 2.5: páginas como array (p.1 siempre; p.2 solo si hay SVG).
+  const paginas = await cargarPaginasPlantilla(product);
+  const primera = paginas[0];
+  if (!primera.ok) {
     const clave =
-      plantilla.motivo === "sin-svg"
+      primera.motivo === "sin-svg"
         ? "avisoSinSvg"
-        : plantilla.motivo === "sin-medidas"
+        : primera.motivo === "sin-medidas"
           ? "avisoSinMedidas"
-          : plantilla.motivo === "sin-zonas"
+          : primera.motivo === "sin-zonas"
             ? "avisoSinZonas"
             : "avisoNoDisponible";
     return (
@@ -189,18 +198,59 @@ export default async function EditorPage({
       ? await cargarReapertura(token)
       : null;
 
+  // SPEC 2.5: reparto por página (`zona-editable-1` existe en ambas; la clave
+  // es pagina+zonaId). Ausente ⇒ 1 ya viene normalizado de cargarReapertura.
   const ajustesImg = new Map(
-    (reapertura?.ajustesImagenes ?? []).map((a) => [a.zonaId, a]),
+    (reapertura?.ajustesImagenes ?? []).map((a) => [
+      `${a.pagina}:${a.zonaId}`,
+      a,
+    ]),
   );
-  const fotosIniciales = (reapertura?.imagenes ?? []).map((e) => ({
-    zonaId: e.zonaId,
-    src: e.src,
-    r2Key: e.r2Key,
-    x: ajustesImg.get(e.zonaId)?.x ?? 0,
-    y: ajustesImg.get(e.zonaId)?.y ?? 0,
-    escala: ajustesImg.get(e.zonaId)?.escala ?? 1,
-  }));
-  const textosIniciales = reapertura?.ajustesTextos ?? [];
+  const fotosIniciales: FotoInicial[] = (reapertura?.imagenes ?? []).map(
+    (e) => ({
+      zonaId: e.zonaId,
+      src: e.src,
+      r2Key: e.r2Key,
+      pagina: e.pagina,
+      x: ajustesImg.get(`${e.pagina}:${e.zonaId}`)?.x ?? 0,
+      y: ajustesImg.get(`${e.pagina}:${e.zonaId}`)?.y ?? 0,
+      escala: ajustesImg.get(`${e.pagina}:${e.zonaId}`)?.escala ?? 1,
+    }),
+  );
+  const textosIniciales: TextoInicial[] = (reapertura?.ajustesTextos ?? []).map(
+    (a) => ({
+      id: a.id,
+      contenido: a.contenido,
+      tamano: a.tamano,
+      color: a.color,
+      fuente: a.fuente,
+      pagina: a.pagina,
+      ...(typeof a.x === "number" ? { x: a.x } : {}),
+      ...(typeof a.y === "number" ? { y: a.y } : {}),
+      ...(a.peso === 700 ? { peso: 700 as const } : {}),
+    }),
+  );
+  const paginasProp: PaginaInicial[] = paginas.map((p) =>
+    p.ok
+      ? {
+          pagina: p.pagina,
+          svgText: p.svg,
+          anchoMm: p.anchoMm,
+          altoMm: p.altoMm,
+          zonas: p.zonas,
+          textosIds: p.textos,
+          motivoAviso: null,
+        }
+      : {
+          pagina: p.pagina,
+          svgText: null,
+          anchoMm: 0,
+          altoMm: 0,
+          zonas: [],
+          textosIds: [],
+          motivoAviso: p.motivo,
+        },
+  );
 
   return (
     <main
@@ -218,11 +268,7 @@ export default async function EditorPage({
         key={code}
         productCode={product.code}
         locale={locale}
-        svgText={plantilla.svg}
-        anchoMm={plantilla.anchoMm}
-        altoMm={plantilla.altoMm}
-        zonas={plantilla.zonas}
-        textosIds={plantilla.textos}
+        paginas={paginasProp}
         fotosIniciales={fotosIniciales}
         textosIniciales={textosIniciales}
         tokenInicial={typeof token === "string" && reapertura ? token : null}

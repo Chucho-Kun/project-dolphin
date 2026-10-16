@@ -37,6 +37,8 @@ export const products = pgTable("products", {
   fotoAbiertaKey: text("foto_abierta_key"),
   // SPEC 02: key R2 del SVG base de la plantilla. Null = editor con aviso.
   plantillaSvgKey: text("plantilla_svg_key"),
+  // SPEC 2.5: key R2 del SVG de la página 2 (carta horizontal). Null = 1 sola página.
+  plantillaSvgKey2: text("plantilla_svg_key_2"),
   dificultad: text("dificultad"),
   tiempoMin: integer("tiempo_min"),
   materiales: text("materiales"),
@@ -54,6 +56,8 @@ export type Product = typeof products.$inferSelect;
 export type CustomizationImagen = {
   zonaId: string;
   r2Key: string;
+  // SPEC 2.5: página 1|2 (ausente ⇒ 1; los ?t= viejos no la traen).
+  pagina?: number;
 };
 
 export type CustomizationAjusteImagen = {
@@ -61,6 +65,8 @@ export type CustomizationAjusteImagen = {
   x: number;
   y: number;
   escala: number;
+  // SPEC 2.5: página 1|2 (ausente ⇒ 1).
+  pagina?: number;
 };
 
 export type CustomizationAjusteTexto = {
@@ -77,6 +83,8 @@ export type CustomizationAjusteTexto = {
   y?: number;
   // SPEC 2.4: peso opcional (ausente ⇒ 400; diseños viejos abren en Regular).
   peso?: 400 | 700;
+  // SPEC 2.5: página 1|2 (ausente ⇒ 1).
+  pagina?: number;
 };
 
 export type CustomizationAjustes = {
