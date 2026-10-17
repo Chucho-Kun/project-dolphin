@@ -70,6 +70,13 @@ type Props = {
   onEscalarTexto?: (id: string, tamanoBase: number) => void;
   /** SPEC 2.3 paso 2-3: archivo externo soltado sobre una zona. */
   onArchivoExterno?: (zonaId: string, file: File) => void;
+  /**
+   * SPEC 2.5: prefijo de los ids de clip (`clip-<prefijo><zona>`). Con las
+   * dos páginas montadas a la vez, los `url(#clip-…)` resuelven a nivel
+   * documento: sin prefijo por página, la p.2 reutilizaría los clips de la
+   * p.1 y sus fotos quedarían recortadas con otra geometría (invisibles).
+   */
+  prefijoClip?: string;
 };
 
 export type CajaZona = { x: number; y: number; w: number; h: number };
@@ -356,6 +363,7 @@ export default function PlantillaSvg({
   onArrastrarTexto,
   onEscalarTexto,
   onArchivoExterno,
+  prefijoClip = "",
 }: Props) {
   const envolturaRef = useRef<HTMLDivElement>(null);
   // SPEC 2.3 paso 4: caché por src (tras quitar y cargar otra foto distinta
@@ -546,7 +554,8 @@ export default function PlantillaSvg({
 
         // Clip por zona con la forma real (diamantes recortan en diamante).
         // El contorno de selección sigue siendo el bbox rectangular (UI).
-        const clipId = `clip-${id}`;
+        // El id lleva prefijo por página (ver `prefijoClip` en Props).
+        const clipId = `clip-${prefijoClip}${id}`;
         defs.querySelector(`#${CSS.escape(clipId)}`)?.remove();
         if (caja && caja.w > 0 && caja.h > 0 && marcador) {
           cajasValidas.current.add(id);
@@ -710,7 +719,7 @@ export default function PlantillaSvg({
           if (meta) {
             const base = meta.base ? `${meta.base} ` : "";
             g.setAttribute("transform", `${base}translate(${ox} ${oy})`);
-            const clipTextoId = `clip-texto-${id}`;
+            const clipTextoId = `clip-${prefijoClip}texto-${id}`;
             defs.querySelector(`#${CSS.escape(clipTextoId)}`)?.remove();
             g.removeAttribute("clip-path");
             if (meta.caja.w > 0 && meta.caja.h > 0) {
@@ -1010,7 +1019,7 @@ export default function PlantillaSvg({
       svg.removeEventListener("pointercancel", arriba);
       svg.querySelectorAll("[data-ui]").forEach((n) => n.remove());
     };
-  }, [svgText, imagenes, textos, zonaSeleccionada, textoSeleccionado, naturales, svgRef, fuentesTick]);
+  }, [svgText, imagenes, textos, zonaSeleccionada, textoSeleccionado, naturales, svgRef, fuentesTick, prefijoClip]);
 
   // SPEC 2.3 paso 2: solo archivos externos; drags internos (mover foto
   // o texto del SPEC 2.1, texto seleccionado) no traen `Files` y se ignoran.

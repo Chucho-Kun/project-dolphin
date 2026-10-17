@@ -333,18 +333,19 @@ export function normalizarSvgDisenador(
   if (capaFotos) out = out.replace(capaFotos.completo, gruposZona.join(""));
   if (capaTextos) out = out.replace(capaTextos.completo, gruposTexto.join(""));
 
-  // Limpieza con aviso: <image> con data: incrustados (fotos de referencia).
+  // SPEC 2.5 (enmienda 2026-10-16): las <image> con data: incrustados en la
+  // capa de diseño SON parte del diseño y deben verse en el editor e imprimirse
+  // en el PDF. Se conservan inline (autocontenido y seguro para el raster del
+  // PDF: sin CORS); solo se reporta el peso incrustado por página.
   let bytesBase64 = 0;
   const reImageData =
     /<image\b[^>]*?(?:href|xlink:href)\s*=\s*("[^"]*"|'[^']*')[^>]*?(?:\/>|>[\s\S]*?<\/image\s*>)/gi;
-  out = out.replace(reImageData, (tag, uriConComillas: string) => {
-    const uri = uriConComillas.replace(/^["']|["']$/g, "");
-    if (!/^data:/i.test(uri)) return tag;
-    bytesBase64 += uri.length;
-    return "";
-  });
+  for (const m of out.matchAll(reImageData)) {
+    const uri = (m[1] ?? "").replace(/^["']|["']$/g, "");
+    if (/^data:/i.test(uri)) bytesBase64 += uri.length;
+  }
   if (bytesBase64 > 0) {
-    avisos.push(`base64-eliminado:${bytesBase64}bytes`);
+    avisos.push(`base64-conservado:${bytesBase64}bytes`);
   }
 
   // Medidas: se respetan si son válidas; si no, se inyectan las de config.

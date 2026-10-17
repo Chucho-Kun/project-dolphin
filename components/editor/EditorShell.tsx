@@ -946,6 +946,7 @@ export default function EditorShell({
             >
               <PlantillaSvg
                 svgText={pg.svgText}
+                prefijoClip={`${pg.pagina}-`}
                 imagenes={
                   pg.pagina === paginaActual
                     ? imagenesCanvas
